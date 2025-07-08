@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public abstract class File
 {
-    private UUID filename;
+    private String filename;
     private String extension;
 
     public File()
@@ -15,11 +15,11 @@ public abstract class File
 
     public File(String extension)
     {
-        filename = UUID.randomUUID();
+        filename = UUID.randomUUID().toString();
         this.extension = extension;
     }
 
-    public File(UUID filename, String extension)
+    public File(String filename, String extension)
     {
         this.filename = filename;
         this.extension = extension;
@@ -30,7 +30,7 @@ public abstract class File
         return filename.toString() + extension;
     }
 
-    public void setFilename(UUID filename)
+    public void setFilename(String filename)
     {
         this.filename = filename;
     }

@@ -27,7 +27,7 @@ public class Movie extends File
     public Movie(String name, int year, String catagory, String fileName)
     {
 
-        super(UUID.fromString(fileName.split("\\.")[0]),fileName.split("\\.")[1]);
+        super(fileName.split("\\.")[0],fileName.split("\\.")[1]);
         this.name = name;
         this.year = year;
         this.catagory = catagory;

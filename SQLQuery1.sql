@@ -1,28 +1,31 @@
 create table files(
-	id int  identity(1,1) primary key,
-	fileName uniqueidentifier not null,
-	fileExtension varchar(5) not null )
+	id int   primary key auto_increment,
+	fileName varchar(36) not null unique,
+	fileExtension varchar(5) not null );
 
 create table movies(
-	id int identity(1,1) primary key,
+	id int primary key auto_increment,
 	name varchar(200) not null,
 	year int not null,
 	category varchar(100),
-	fileID int not null,
-	foreign key (fileID) references files)
+	fileId int not null,
+	foreign key (fileId) references files,
+    unique key(name,year));
 
 create table series(
-	id int identity(1,1) primary key,
+	id int primary key auto_increment,
 	name varchar(200) not null,
 	year int not null,
-	category varchar(100))
+	category varchar(100),
+    unique key(name,year));
 
 create table seasons(
-	id int identity(1,1) primary key,
+	id int primary key auto_increment,
 	seasonNumber int not null,
 	name varchar(100),
 	serieId int not null,
-	foreign key(serieId) references series)
+	foreign key(serieId) references series,
+    unique key(serieId, seasonNumber));
 
 create table episodes(
 	seasonId int not null,
@@ -31,86 +34,109 @@ create table episodes(
 	fileId int not null,
 	primary key(seasonId,episodeNumber),
 	foreign key(seasonId) references seasons,
-	foreign key(fileId) references files)
+	foreign key(fileId) references files,
+    unique key(seasonId, episodeNumber));
 
 create table songs(
-	id int identity(1,1) primary key,
+	id int primary key auto_increment,
 	name varchar(200) not null,
-	artist varchar(200),
+	artist varchar(200) not null,
 	album varchar(200),
 	year int,
 	genre varchar(50),
 	fileId int not null,
-	foreign key(fileId) references files)
+	foreign key(fileId) references files,
+    unique key(name, artist));
 
 create table playlists(
-	id int identity(1,1) primary key,
-	name varchar(200) not null unique)
+	id int auto_increment primary key,
+	name varchar(200) not null unique);
 
 create table songs_playlists(
 	idSong int not null,
 	idPlaylist int not null,
 	primary key(idSong,idPlaylist),
 	foreign key(idSong) references songs,
-	foreign key(idPlaylist) references playlists)
+	foreign key(idPlaylist) references playlists);
 
 
-create procedure insertMovie @movieName varchar(200), @year int, @category varchar(100), @fileName uniqueidentifier
-as
+DELIMITER //
+create procedure insertMovie (in movieName varchar(200), in year int, in category varchar(100), in fileName varchar(36))
 begin
-	declare @fileId int;
-	set @fileId = (select id from files where fileName = @fileName);
+	set @fileId = (select id from files where files.fileName = fileName);
 
-	insert into movies
-	values(@movieName,@year,@category,@fileId);
-end;
+	insert into movies(name,year,category,fileId)
+	values(movieName,year,category,@fileId);
+end//
+DELIMITER ;
 
-create procedure insertEpisode @seriesName varchar(200), @seriesYear int, @seasonNumber int, @episodeNumber int,@episodeName varchar(100),@fileName uniqueidentifier
-as
+DELIMITER //
+create procedure insertEpisode(in seriesName varchar(200), in seriesYear int, in seasonNumber int, in episodeNumber int,in episodeName varchar(100),in fileName varchar(36))
 begin
-	declare @serieId int;
-	declare @seasonId int;
-	declare @fileId int;
 
-	set @serieId = (select id from series where name = @seriesName and year = @seriesYear);
-	set @seasonId = (select id from seasons where serieId = @serieId and seasonNumber=@seasonNumber);
-	set @fileId = (select id from files where fileName = @fileName);
+	set @serieId = (select id from series where name = seriesName and year = seriesYear);
+	set @seasonId = (select id from seasons where serieId = @serieId and seasonNumber=seasonNumber);
+	set @fileId = (select id from files where files.fileName = fileName);
 
-	insert into episodes
-	values(@seasonId,@episodeNumber,@episodeName,@fileId);
-end;
-
-create procedure insertSeason @serieName varchar(200), @serieYear int, @seasonNumber int,@seasonName varchar(100)
-as
+	insert into episodes(seasonId,episodeNumber,episodeName,fileId)
+	values(@seasonId,episodeNumber,episodeName,@fileId);
+end//
+DELIMITER ;
+drop procedure insertSeason
+DELIMITER //
+create procedure insertSeason(in serieName varchar(200), in serieYear int, in seasonNumber int, in seasonName varchar(100))
 begin
-	declare @serieId int;
+	set @serieId = (select id from series where name=serieName and year = serieYear);
 
-	set @serieId = (select id from series where name=@serieName and year = @serieYear);
-
-	insert into seasons
-	values(@seasonNumber,@seasonName,@serieId);
-
-end;
-
-create procedure insertSong @name varchar(200),@artist varchar(200),@album varchar(200),@year int,@genre varchar(50),@fileName uniqueidentifier
-as
+	insert into seasons(seasonNumber, name, serieId)
+	values(seasonNumber,seasonName,@serieId);
+end//
+DELIMITER ;
+DELIMITER //
+create procedure insertSong(in name varchar(200), in artist varchar(200), in album varchar(200), in year int, in genre varchar(50), in fileName varchar(36))
 begin
-	declare @fileId int;
-	set @fileId = (select id from files where fileName = @fileName);
 
-	insert into songs
-	values(@name,@artist,@album,@year,@genre,@fileId);
-end;
+	set @fileId = (select id from files where files.fileName = fileName);
 
-create procedure addSongToPlaylist @playListName varchar(200), @songFileName uniqueidentifier
-as
+	insert into songs(name,artist,album,year,genre,fileId)
+	values(name,artist,album,year,genre,@fileId);
+end//
+DELIMITER ;
+
+DELIMITER //
+create procedure addSongToPlaylist(in playListName varchar(200), in songFileName varchar(36))
 begin
-	declare @songId int;
-	declare @playlistId int;
-
-	set @songId = (select id from songs where fileId = (select id from files where fileName = @songFileName));
-	set @playlistId = (select id from playlists where name = @playListName);
+	set @songId = (select id from songs where fileId = (select id from files where fileName = songFileName));
+	set @playlistId = (select id from playlists where name = playListName);
 
 	insert into songs_playlists
 	values(@songId,@playlistId);
-end
+end//
+DELIMITER ;
+
+drop view seriesOut;
+
+create view moviesOut as
+select name,year,category,concat(files.fileName,files.fileExtension) as fileName 
+from movies join files 
+where movies.fileId = files.id;
+
+create view seriesOut as
+select series.name as name,year,category,count(seasons.id) as noOfSeasons 
+from series join seasons where series.id = seasons.serieId
+group by series.id;
+
+select * from movies inner join files where movies.fileId=files.id;
+
+insert into files(fileName,fileExtension)
+values ("ef35ca8f-5d6e-4711-8eb2-ccf974727977",".mp4");
+
+select * from seriesOut;
+
+
+call insertMovie("The Scarlet Claw",1944,"Mystery","ef35ca8f-5d6e-4711-8eb2-ccf974727977");
+
+insert into series(name,year)
+values("Criminal Minds",2005);
+
+call insertSeason("Criminal Minds",2005,4,null)
