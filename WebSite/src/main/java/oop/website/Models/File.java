@@ -4,39 +4,28 @@ import java.util.UUID;
 
 public abstract class File
 {
-    private String filename;
-    private String extension;
+    private String fileName;
 
     public File()
     {
-        filename=null;
-        extension=null;
+        fileName =null;
     }
 
-    public File(String extension)
-    {
-        filename = UUID.randomUUID().toString();
-        this.extension = extension;
+    public File(String extension) {
+        fileName = UUID.randomUUID().toString() + extension;
     }
 
-    public File(String filename, String extension)
-    {
-        this.filename = filename;
-        this.extension = extension;
+    public File(String fileName, String extension) {
+        this.fileName = fileName +extension;
     }
 
     public String getFileName()
     {
-        return filename.toString() + extension;
+        return fileName;
     }
 
-    public void setFilename(String filename)
+    public void setFileName(String fileName)
     {
-        this.filename = filename;
-    }
-
-    public void setExtension(String extension)
-    {
-        this.extension = extension;
+        this.fileName = fileName;
     }
 }

@@ -1,36 +1,33 @@
 package oop.website.Models;
 
-import java.util.UUID;
-
 public class Movie extends File
 {
     private String name;
     private int year;
-    private String catagory;
+    private String category;
 
     public Movie()
     {
         super();
         name=null;
         year=0;
-        catagory=null;
+        category =null;
     }
 
-    public Movie(String name, int year, String catagory)
+    public Movie(String name, int year, String category)
     {
         super();
         this.name = name;
         this.year = year;
-        this.catagory = catagory;
+        this.category = category;
     }
 
-    public Movie(String name, int year, String catagory, String fileName)
+    public Movie(String name, int year, String category, String fileName)
     {
-
         super(fileName.split("\\.")[0],fileName.split("\\.")[1]);
         this.name = name;
         this.year = year;
-        this.catagory = catagory;
+        this.category = category;
     }
 
     public String  getName()
@@ -49,12 +46,12 @@ public class Movie extends File
     {
         this.year = year;
     }
-    public String getCatagory()
+    public String getCategory()
     {
-        return catagory;
+        return category;
     }
-    public void setCatagory(String catagory)
+    public void setCategory(String category)
     {
-        this.catagory = catagory;
+        this.category = category;
     }
 }
