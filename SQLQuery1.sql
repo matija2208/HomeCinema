@@ -12,4 +12,8 @@ delete from files where (id not in (select fileId from movies) and id not in (se
 
 select * from episodesOut;
 
-drop procedure insertEpisode
+drop procedure insertEpisode;
+
+select fileName
+from episodesOut 
+where serieName = "House of Cards" and year = 2013 and seasonNumber = 1

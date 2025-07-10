@@ -1,14 +1,19 @@
-create view moviesOut as
-select name,year,category,concat(files.fileName,files.fileExtension) as fileName 
-from movies join files 
-where movies.fileId = files.id;
+create or replace view moviesOut as
+select name,year,category, concat(poster.fileName,poster.fileExtension) as posterName, concat(video.fileName,video.fileExtension) as fileName 
+from movies 
+left join files as poster 
+	on movies.posterId=poster.id 
+join files as video 
+	on movies.fileId = video.id;
 
-alter view seriesOut as
-select series.name as name,year,category,count(seasons.id) as noOfSeasons 
-from series join seasons where series.id = seasons.serieId
+create or replace view seriesOut as
+select series.name as name,year,category,count(seasons.id) as noOfSeasons, concat(files.fileName,files.fileExtension) as posterName
+from series 
+left join files on series.posterId = files.id
+join seasons where series.id = seasons.serieId
 group by series.id;
 
-create view seasonsOut as
+create or replace view seasonsOut as
 select seasonNumber, seasons.name as seasonName, series.name as serieName, year
 from seasons join series on serieId = series.id;
 
@@ -18,3 +23,4 @@ from episodes
 join files on files.id = fileId
 join seasons on seasonId = seasons.id
 join series on serieId = series.id;
+

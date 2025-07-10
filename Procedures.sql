@@ -1,11 +1,15 @@
-
+drop procedure insertMovie;
 DELIMITER //
-create procedure insertMovie (in movieName varchar(200), in year int, in category varchar(100), in fileName varchar(36))
+create procedure insertMovie (in movieName varchar(200), in year int, in category varchar(100), in fileName varchar(36), in posterName varchar(36))
 begin
 	set @fileId = (select id from files where files.fileName = fileName);
-
-	insert into movies(name,year,category,fileId)
-	values(movieName,year,category,@fileId);
+    
+    if(not posterName = "" and posterName is not null)
+		then set @posterId = (select id from files where files.fileName = posterName);
+		else set @posterId = null;
+	end if;
+	insert into movies(name,year,category,fileId, posterId)
+	values(movieName,year,category,@fileId, @posterId);
 end//
 DELIMITER ;
 
@@ -52,3 +56,16 @@ begin
 	values(@songId,@playlistId);
 end//
 DELIMITER ;
+
+drop procedure insertSerie;
+DELIMITER //
+create procedure insertSerie(in serieName varchar(200), in year int, in category varchar(100), in posterName varchar(36))
+begin
+	if(not posterName = "" and posterName is not null)
+		then set @posterId = (select id from files where files.fileName = posterName);
+		else set @posterId = 0;
+    end if;
+    insert into series(name, year, category, posterId)
+    values(serieName,year,category,@posterId);
+end//
+delimiter ;

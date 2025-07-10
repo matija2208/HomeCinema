@@ -5,6 +5,7 @@ public class Movie extends File
     private String name;
     private int year;
     private String category;
+    private String posterName;
 
     public Movie()
     {
@@ -54,4 +55,12 @@ public class Movie extends File
     {
         this.category = category;
     }
+    public String getPosterName() {
+        return posterName;
+    }
+
+    public void setPosterName(String posterName) {
+        this.posterName = posterName;
+    }
+
 }

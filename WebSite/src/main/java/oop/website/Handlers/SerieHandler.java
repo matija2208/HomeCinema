@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -81,12 +82,22 @@ public class SerieHandler
 
     @PostMapping(path = "/one", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseBody
-    public ResponseEntity<Object> postSeries(@RequestPart("serie") Serie serie, @RequestPart("files") MultipartFile ...files)
+    public ResponseEntity<Object> postSeries(@RequestPart("serie") Serie serie, @RequestPart(value = "poster",required = false) MultipartFile poster,  @RequestPart(value = "files",required = false) MultipartFile ...files)
     {
         try
         {
-            String sql = "INSERT INTO series(name, year, category) VALUES(?,?,?)";
-            jdbcTemplate.update(sql, serie.getName(), serie.getYear(), serie.getCategory());
+            String fileName=null;
+            if(poster!=null)
+            {
+                String fileExtension = "."+poster.getOriginalFilename().split("\\.")[1];
+                fileName = fileHandler.saveFile(poster).split("\\.")[0];
+
+
+                String sql = "INSERT INTO files(fileName, fileExtension) VALUES(?,?)";
+                jdbcTemplate.update(sql, fileName, fileExtension);
+            }
+            SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("insertSerie");
+            call.execute(serie.getName(),serie.getYear(), serie.getCategory(), fileName);
 
             if(serie.getSeasons()!=null)
             {
@@ -95,22 +106,21 @@ public class SerieHandler
                 for(Season season : serie.getSeasons())
                 {
                     List<MultipartFile> fileList = new ArrayList<MultipartFile>();
-                    for(Episode episode:season.getEpisodes())
+                    if(season.getEpisodes()!=null)
                     {
-                        boolean t =false;
+                        for (Episode episode : season.getEpisodes()) {
+                            boolean t = false;
 
-                        for(MultipartFile file:files)
-                        {
-                            if(Objects.equals(file.getOriginalFilename(), episode.getFileName()))
-                            {
-                                fileList.add(file);
-                                t=true;
-                                break;
+                            for (MultipartFile file : files) {
+                                if (Objects.equals(file.getOriginalFilename(), episode.getFileName())) {
+                                    fileList.add(file);
+                                    t = true;
+                                    break;
+                                }
                             }
-                        }
-                        if(!t)
-                        {
-                            return new ResponseEntity<>("No file parsed for episode: "+episode.getFileName(), HttpStatus.BAD_REQUEST);
+                            if (!t) {
+                                return new ResponseEntity<>("No file parsed for episode: " + episode.getFileName(), HttpStatus.BAD_REQUEST);
+                            }
                         }
                     }
                     seasonHandler.postOne(season, serie.getName(), serie.getYear(), fileList.toArray(new MultipartFile[0]));

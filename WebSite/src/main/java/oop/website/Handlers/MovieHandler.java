@@ -59,7 +59,7 @@ public class MovieHandler
 
     @PostMapping(path = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
-    public ResponseEntity<Object> setMovie(@RequestPart(value = "movie", required = true) Movie movie, @RequestPart(name="file",required = true) MultipartFile file)
+    public ResponseEntity<Object> setMovie(@RequestPart(value = "movie", required = true) Movie movie, @RequestPart(value="poster",required = false) MultipartFile poster, @RequestPart(name="file",required = true) MultipartFile file)
     {
         try
         {
@@ -74,9 +74,18 @@ public class MovieHandler
             String sql = "INSERT INTO files(fileName,fileExtension) VALUES(?,?)";
             jdbcTemplate.update(sql, fileName, fileExtension);
 
+            String posterName = null;
+            if(poster!=null)
+            {
+                String posterExtension = "."+poster.getOriginalFilename().split("\\.")[1];
+                posterName = fh.saveFile(poster).split("\\.")[0];
+
+                jdbcTemplate.update(sql, posterName, posterExtension);
+            }
+
             SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("insertMovie");
 
-            call.execute(movie.getName(), movie.getYear(), movie.getCategory(), movie.getFileName());
+            call.execute(movie.getName(), movie.getYear(), movie.getCategory(), movie.getFileName(), posterName);
             return new ResponseEntity<>(HttpStatus.CREATED);
         }
         catch (Exception e)

@@ -6,6 +6,7 @@ public class Serie
 {
 
     private String name;
+    private String posterName;
     private int year;
     private String category;
     private int noOfSeasons;
@@ -69,6 +70,15 @@ public class Serie
     public void setNoOfSeasons(int noOfSeasons) {
         this.noOfSeasons = noOfSeasons;
     }
+
+    public String getPosterName() {
+        return posterName;
+    }
+
+    public void setPosterName(String posterName) {
+        this.posterName = posterName;
+    }
+
 
     public List<Season> getSeasons() {
         return seasons;

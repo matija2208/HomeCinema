@@ -4,7 +4,8 @@ after delete
 on movies for each row
 begin
 	set @fileId = old.fileId;
-    delete from files where id = @fileId;
+    set @posterId = old.posterId;
+    delete from files where id = @fileId or (@posterId is not null and id = @posterId);
 end//
 delimiter ;
 
@@ -57,3 +58,27 @@ begin
     delete from seasons where seasons.serieId = @serieId;
 end//
 delimiter ;
+
+drop trigger checkExtension;
+delimiter //
+create trigger deleteSeriePoster
+after delete
+on series for each row
+begin
+	set @posterId = old.posterId;
+    if(@posterId is not null)
+		then delete from files where id = @posterId;
+	end if;
+end//
+delimiter ;
+
+DELIMITER //
+CREATE TRIGGER checkExtension
+BEFORE INSERT ON files
+FOR EACH ROW
+BEGIN
+    IF LEFT(NEW.fileExtension, 1) != '.' THEN
+        SET NEW.fileExtension = CONCAT('.', NEW.fileExtension);
+    END IF;
+END//
+DELIMITER ;

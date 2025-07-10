@@ -3,12 +3,16 @@ create table files(
 	fileName varchar(36) not null unique,
 	fileExtension varchar(5) not null );
 
+drop table movies;
+
 create table movies(
 	id int primary key auto_increment,
 	name varchar(200) not null,
 	year int not null,
 	category varchar(100),
 	fileId int not null,
+    posterId int,
+    foreign key(posterId) references files,
 	foreign key (fileId) references files,
     unique key(name,year));
 
@@ -17,7 +21,10 @@ create table series(
 	name varchar(200) not null,
 	year int not null,
 	category varchar(100),
-    unique key(name,year));
+    posterId int,
+    unique key(name,year),
+    foreign key(posterId) references files);
+
 
 create table seasons(
 	id int primary key auto_increment,
