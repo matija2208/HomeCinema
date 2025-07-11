@@ -35,11 +35,11 @@ create table seasons(
     unique key(serieId, seasonNumber));
 
 create table episodes(
+	id int primary key auto_increment,
 	seasonId int not null,
 	episodeNumber int not null,
 	name varchar(100),
 	fileId int not null,
-	primary key(seasonId,episodeNumber),
 	foreign key(seasonId) references seasons,
 	foreign key(fileId) references files,
     unique key(seasonId, episodeNumber));
@@ -65,3 +65,29 @@ create table songs_playlists(
 	primary key(idSong,idPlaylist),
 	foreign key(idSong) references songs,
 	foreign key(idPlaylist) references playlists);
+    
+    
+create table users(
+	id int primary key auto_increment,
+    name varchar(100) not null unique,
+    password varchar(100) not null,
+    token varchar(500));
+    
+create table users_movies_continue_watching(
+	userId int not null,
+    movieId int not null,
+    timeStamp varchar(8) not null default "00:00:00",
+    lastWatched datetime not null,
+    primary key(userId, movieId),
+    foreign key(userId) references users(id),
+    foreign key(movieId) references movies(id));
+    
+
+create table users_episodes_continue_watching(
+	userId int not null,
+    episodeId int not null,
+    timeStamp varchar(8) not null default "00:00:00",
+    lastWatched datetime not null,
+    primary key(userId, episodeId),
+    foreign key(userId) references users(id),
+    foreign key(episodeId) references episodes(id));

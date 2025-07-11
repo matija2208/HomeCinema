@@ -69,3 +69,36 @@ begin
     values(serieName,year,category,@posterId);
 end//
 delimiter ;
+
+delimiter //
+create procedure saveWatchingTime(in userName varchar(100), in timeStamp varchar(8), in fileName varchar(36))
+begin
+	set @lastWatched = now();
+    set @movieId = (
+		select movies.id 
+        from movies 
+		join files on movies.fileId = files.id 
+        where files.fileName=fileName);
+    
+    set @episodeId = (
+		select episodes.id 
+        from episodes 
+        join files on episodes.fileId = files.id 
+        where files.fileName=fileName);
+    
+    set @userId = (
+		select id 
+        from users 
+        where name = userName);
+    
+    if(@movieId is not null) then 
+		insert into users_movies_continue_watching(userId, movieId, timeStamp,lastWatched)
+		values(@userId,@movieId,timeStamp,@lastWatched);
+	elseif(@episodeId is not null) then
+		insert into users_episodes_continue_watching(userId, episodeId, timeStamp, lastWatched)
+        values(@userId,@episodeId,timeStamp,@lastWatched);
+	end if;
+end//
+delimiter ;
+
+    
