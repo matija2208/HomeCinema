@@ -1,213 +1,124 @@
-async function loadMovies()
+async function search(searchParam)
 {
-    document.title = "Movies";
-
-    document.getElementById("lastWatched").style.display = "none";
-    document.getElementById("movies").style.display = "block";
-    document.getElementById("series").style.display = "none";
-
-    let response = await axios.get(LINK + "api/movies/all");
-    // console.log(response);
-
-    let movies = response.data;
-    let container = document.getElementById("moviesContainer");
-
-    container.innerHTML = "";
-    movies.forEach(movie => {
-        let card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML =
-        `
-            <img src="${LINK+"api/files/?fileName="+movie.posterName}" alt="Poster banner">
-            <div class="card-content">
-                <p class="title">${movie.name}</p>
-                <div class = "serie-info">
-                    <p class = "extra">${movie.year}</p>
-                 ` + (movie.category!==null ? `<p class = "extra">${movie.category}</p></div></div>` : "</div></div>");
-        card.onclick=()=>{
-            const Url = new URL(window.location.href);
-            Url.searchParams.set("name",movie.name);
-            Url.searchParams.set("year",movie.year);
-            Url.searchParams.set("type","movie");
-            window.history.pushState({}, '', Url);
-            loadFocus();
-        }
-        if (movie.posterName === null || movie.posterName === "") {
-            card.querySelector("img").style.display = "none"; // Hide image if no poster
-            card.querySelector(".card-content").style = "opacity: 1;pointer-events: auto;z-index: 1;";
-        }
-        container.appendChild(card);
-    });
-}
-
-
-
-async function loadSeries()
-{
-    document.title = "Series";
-
-    document.getElementById("lastWatched").style.display = "none";
-    document.getElementById("movies").style.display = "none";
-    document.getElementById("series").style.display = "block";
-
-    let response = await axios.get(LINK + "api/series/all");
-    console.log(response);
-
-    let series = response.data;
-    let container = document.getElementById("seriesContainer");
-
-    container.innerHTML = "";
-    series.forEach(serie => {
-        let card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML =
-        `
-            <img src="${LINK+"api/files/?fileName="+serie.posterName}" alt="Poster banner">
-            <div class="card-content">
-                <p class="title">${serie.name}</p>
-                <div class = "serie-info">
-                    <p class = "extra">${serie.year +" "+serie.noOfSeasons}</p>
-                     <p class = "extra">${serie.category}</p>
-                </div>
-            </div>
-        `;
-        card.onclick=()=>{
-            const Url = new URL(window.location.href);
-            Url.searchParams.set("name",serie.name);
-            Url.searchParams.set("year",serie.year);
-            Url.searchParams.set("type","serie");
-            window.history.pushState({}, '', Url);
-            loadFocus();
-        }
-        if (serie.posterName === null || serie.posterName === "") {
-            card.querySelector("img").style.display = "none"; // Hide image if no poster
-            card.querySelector(".card-content").style = "opacity: 1;pointer-events: auto;z-index: 1;";
-        }
-        container.appendChild(card);
-    });
-}
-
-async function loadLastWatched()
-{
-    try
+    if (searchParam.length > 3)
     {
-        document.title = "Last Watched";
-        document.getElementById("lastWatched").style.display = "block";
-        document.getElementById("movies").style.display = "none";
-        document.getElementById("series").style.display = "none";
-
-        let responseMovies = await axios.get(LINK + "api/movies/lastWatched");
-        let responseSeries = await axios.get(LINK + "api/series/lastWatched");
-
-        console.log("Movies:", responseMovies.data);
-        console.log("Series:", responseSeries.data);
-
-        let movies = responseMovies.data;
-        let series = responseSeries.data;
-
-        let videos = [...movies, ...series];
-
-        
-        videos.sort((a, b) => {
-            return new Date(b.lastWatched).getTime() - new Date(a.lastWatched).getTime();
-        })
-
-        if (videos.length === 0)
+        try
         {
-            //document.getElementById("lastWatched").style.display = "none";
+            searchParam=searchParam.split(' ').join('%25');
 
-            let movies = await axios.get(LINK + "api/movies/all");
-            let series = await axios.get(LINK + "api/series/all");
+            let response = await axios.get(LINK+"api/search?searchParam="+searchParam);
 
-            console.log("No last watched content found, loading all movies and series.");
-            videos = [...movies.data, ...series.data];
-            videos.sort((a, b) => {
-                if (a.name.localeCompare(b.name) === 0)
-                    return a.year - b.year; // Sort by year if names are the same
-                return a.name.localeCompare(b.name); // Sort by name
-            });
+            let results=response.data;
 
-            let sectionTitles = document.querySelectorAll(".sectionTitle");
-            sectionTitles.forEach(title => {
-                title.style.display = "none"; // Hide section titles if no last watched content
-            });
+            let cardContainer =
+                document.getElementById("cardContainer");
 
-        }
+            cardContainer.innerHTML='';
 
+            for(let result of results)
+            {
+                console.log(result);
+                let card = document.createElement('div');
+                card.className="card";
 
-        console.log("Sorted Videos:", videos);
+                if(result.type === 'movie')
+                {
+                    try{
 
-        let container = document.getElementById("lastWatchedContainer");
-        container.innerHTML = "";
-        for (let i = 0; i < Math.min(10,videos.length); i++)
-        {
-            let video = videos[i];
-            let card = document.createElement("div");
-            card.className = "card";
-            card.innerHTML = `
-                <img src="${LINK + "api/files/?fileName=" + (video.posterName)}" alt="Poster banner">
-                <div class="card-content">
-                    <p class="title">${video.name}</p>
-                    <div class="serie-info">
-                        <p class="extra">${video.year}${(video?.noOfSeasons !== null && video.noOfSeasons !== undefined) ? " " + video.noOfSeasons : ""}</p>
-                        ${video.category !== null ? `<p class="extra">${video.category}</p>` : ""}
-                    </div>
-                </div>
-            `;
+                        let response = await axios.get(LINK+"api/movies/one",{
+                            params:{
+                                name:result.name,
+                                year:result.year
+                            }
+                        })
 
-            card.onclick=()=>{
-                const Url = new URL(window.location.href);
-                Url.searchParams.set("name",video.name);
-                Url.searchParams.set("year",video.year);
-                Url.searchParams.set("type",(video?.noOfSeasons !== null && video.noOfSeasons !== undefined)?"serie":"movie");
-                window.history.pushState({}, '', Url);
-                loadFocus();
+                        let movie=response.data;
+
+                        card.innerHTML =
+                            `
+                            <img src="${LINK+"api/files/?fileName="+movie.posterName}" alt="Poster banner">
+                                <div class="card-content">
+                                    <p class="title">${movie.name}</p>
+                                    <div class = "serie-info">
+                                        <p class = "extra">${movie.year}</p>
+                                       ` + (movie.category!==null ? `<p class = "extra">${movie.category}</p></div>` : "</div>");
+                        card.onclick=()=>
+                        {
+                            const Url = new URL(window.location.href);
+                            Url.searchParams.set("name",movie.name);
+                            Url.searchParams.set("year",movie.year);
+                            Url.searchParams.set("type","movie");
+                            window.history.pushState({}, '', Url);
+                            loadFocus();
+                        }
+                        if (movie.posterName === null || movie.posterName === "") {
+                            card.querySelector("img").style.display = "none"; // Hide image if no poster
+                            card.querySelector(".card-content").style = "opacity: 1;pointer-events: auto;z-index: 1;";
+                        }
+                        cardContainer.appendChild(card);
+                    }
+                    catch(err)
+                    {
+                        console.log(err);
+                    }
+                }
+                else if(result.type==='serie')
+                {
+                    try
+                    {
+                        let response = await axios.get(LINK+"api/series/one",{
+                            params:{
+                                serieName:result.name,
+                                year:result.year
+                            }
+                        })
+
+                        let serie = response.data;
+
+                        let card = document.createElement("div");
+                        card.className = "card";
+                        card.innerHTML =
+                                `
+                            <img src="${LINK+"api/files/?fileName="+serie.posterName}" alt="Poster banner">
+                            <div class="card-content">
+                                <p class="title">${serie.name}</p>
+                                <div class = "serie-info">
+                                    <p class = "extra">${serie.year +" "+serie.noOfSeasons}</p>
+                                     
+                                    ` + (serie.category!==null ? `<p class = "extra">${serie.category}</p></div></div>` : "</div></div>");
+
+                        card.onclick=()=>{
+                            const Url = new URL(window.location.href);
+                            Url.searchParams.set("name",serie.name);
+                            Url.searchParams.set("year",serie.year);
+                            Url.searchParams.set("type","serie");
+                            window.history.pushState({}, '', Url);
+                            loadFocus();
+                        }
+                        if (serie.posterName === null || serie.posterName === "") {
+                            card.querySelector("img").style.display = "none"; // Hide image if no poster
+                            card.querySelector(".card-content").style = "opacity: 1;pointer-events: auto;z-index: 1;";
+                        }
+                        cardContainer.appendChild(card);
+                    }
+                    catch(err)
+                    {
+                        console.log(err);
+                    }
+                }
             }
 
-            if (video.posterName === null || video.posterName === "") {
-                card.querySelector("img").style.display = "none"; // Hide image if no poster
-                card.querySelector(".card-content").style = "opacity: 1;pointer-events: auto;z-index: 1;";
-            }
-            container.appendChild(card);
-        }
-    }
-    catch (error)
-    {
-        console.log("Error loading last watched content:", error);
-    }
-}
 
-async function loadContent()
-{
-    try
-    {
-        let params = new URLSearchParams(window.location.search);
-        let content = params.get("content") || "lastWatched"; // Default to lastWatched if no content specified
-        
-        if(content === "lastWatched")
-        {
-            loadLastWatched();
-        }
-        else if(content === "movies")
-        {
-            loadMovies();
-        }
-        else if(content === "series")
-        {
-            loadSeries();
-        }
-        else
-        {
-            loadLastWatched();
-        }
-    }
-    catch (error)
-    {
-        console.log("Error loading content:", error);
-    }
-}
 
-loadContent();
+            console.log(response);
+        }
+        catch (err)
+        {
+            console.log(err);
+        }
+    }
+
+}
 
 let changeSeasonButtonValue=true;
 function changeSeasonButton()
@@ -281,7 +192,7 @@ async function changeSeason(name,year,seasonNumber)
             }
 
             episodeContainer.innerHTML+=`
-                <div class="episodeFocus" onclick="document.location.href='${LINK+"player?type=serie&name="+name+"&year="+year+"&seasonNumber="+seasonNumber+"&episodeNumber="+episode.episodeNumber}';">
+                <div class="episode" onclick="document.location.href='${LINK+"player?type=serie&name="+name+"&year="+year+"&seasonNumber="+seasonNumber+"&episodeNumber="+episode.episodeNumber}';">
                     <p class = "episodeNumber">${episode.episodeNumber}</p>
                     <p class = "episodeName">${((episode.name!==null)?episode.name:"")}</p>
                     <p class = "episodeTimeStamp">${((timeStamp!==null)?timeStamp:"")}</p>
@@ -501,3 +412,6 @@ document.addEventListener('click', function(event){
         window.history.pushState({}, '', Url);
     }
 } )
+
+loadFocus();
+search(document.getElementById("searchBox").value)

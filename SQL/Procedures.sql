@@ -124,6 +124,6 @@ delimiter ;
 
 call saveWatchingTime('matija','00:02:00','a2714663-2c4a-4a8b-8a98-e8db18006a12');
 
-call saveWatchingTime('matija','00:03:00','285c9aa9-a155-4639-8df4-3c2800d898c3');
+call saveWatchingTime('matija','00:04:00','285c9aa9-a155-4639-8df4-3c2800d898c3');
 call saveWatchingTime('root','00:03:00','4514e254-f6ce-488a-a774-a23ccdf465ec');
     

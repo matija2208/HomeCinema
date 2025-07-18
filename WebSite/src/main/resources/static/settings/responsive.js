@@ -205,14 +205,14 @@ function addSeasonButton()
                 </div>
                 
                 <div class = "addWrapper">
-                    <input type="checkbox" class="multipleEpisodes" id="multipleEpisodesCheckbox" onchange="checkBoxChange(this,this.parentElement.parentElement)">
+                    <input type="checkbox" class="multipleEpisodes" id="multipleEpisodesCheckbox${div.children.length}" onchange="checkBoxChange(this,this.parentElement.parentElement)">
         
-                    <label for="multipleEpisodesCheckbox"class="addLabel"><span class="custom-checkbox"></span> Upload all files at once</label>
+                    <label for="multipleEpisodesCheckbox${div.children.length}"class="addLabel"><span class="custom-checkbox"></span> Upload all files at once</label>
                 </div>
         
                 <div class = "wrapper" style="display: none;">
-                    <input class="episodeFiles" id="episodeFiles" type="file" accept="video/*" multiple hidden>
-                    <label for="episodeFiles" class="file-input" id="uploadEpisodes">Upload Files</label>
+                    <input class="episodeFiles" id="episodeFiles${div.children.length}" type="file" accept="video/*" multiple hidden>
+                    <label for="episodeFiles${div.children.length}" class="file-input" id="uploadEpisodes">Upload Files</label>
                 </div>
 
                 <div class="episodes" id="episodes" style="display:contents;">
@@ -305,6 +305,17 @@ function checkBoxChange(checkbox, form) {
         episodeButtons.style.display = "flex";
 
         uploadFiles.style.display = "none";
+
+
+        let fileUploade = uploadFiles.querySelector("input");
+        fileUploade.value="";
+        fileUploade.dispatchEvent(new Event("change", { bubbles: true }));
+
+        console.log(fileUploade)
+
+        form.querySelector("div[class=\"episodes\"]").innerHTML="";
+
+        episodeButtons.querySelectorAll(".addWrapper")[1].style.display="none";
     }
 }
 

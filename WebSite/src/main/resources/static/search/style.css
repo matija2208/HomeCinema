@@ -1,0 +1,25 @@
+.searchBox{
+    margin: 2vh;
+
+    margin-left: 10%;
+    margin-right: 10%;
+
+    background-color: #1138;
+    display: flex;
+
+    width:80%;
+
+    font-size: 0.8em;
+    color:#08c;
+    font-family: 'Consolas', monospace;
+
+
+    padding: 10px;
+    box-sizing: border-box;
+    border: 2px solid #446;
+    border-radius: 5px;
+}
+
+.searchBox:hover{
+    border: 2px solid #08c;
+}

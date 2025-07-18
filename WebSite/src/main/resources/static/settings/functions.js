@@ -1,6 +1,7 @@
 async function saveMovie() {
     let errorLabel =document.getElementById("movieErrorLabel");
     errorLabel.style.display = "none";
+    errorLabel.style.color="red";
 
     let name = document.getElementById("movieName").value;
     let year = document.getElementById("movieYear").value;
@@ -52,7 +53,15 @@ async function saveMovie() {
         let response = await axios.post(LINK+"api/movies/",formData);
         if(response.status===201)
         {
-            console.log(response);
+            document.getElementById("movieName").value = "";
+            document.getElementById("movieYear").value = "";
+            document.getElementById("moviePoster").value="";
+            document.getElementById("movieFile").value="";
+            document.getElementById("movieCategory").value="";
+
+            errorLabel.style.color="green";
+            errorLabel.innerHTML="Episode saved!";
+            errorLabel.style.display="flex";
         }
 
     }
@@ -68,6 +77,7 @@ async function saveUser()
 {
     let errorLabel =document.getElementById("userErrorLabel");
     errorLabel.style.display = "none";
+    errorLabel.style.color="red";
 
 
 
@@ -92,7 +102,12 @@ async function saveUser()
         let response = await axios.post(LINK+"auth/register",user);
         if(response.status===200)
         {
-            console.log("userCreated");
+            document.getElementById("username").value="";
+            document.getElementById("password").value="";
+
+            errorLabel.style.color="green";
+            errorLabel.innerHTML="User saved!";
+            errorLabel.style.display="flex";
         }
     }
     catch(err)
@@ -109,6 +124,7 @@ async function saveSerie()
     // console.log(1);
     let errorLabel =document.getElementById("serieErrorLabel");
     errorLabel.style.display = "none";
+    errorLabel.style.color = "red";
 
     // console.log(errorLabel);
 
@@ -257,7 +273,19 @@ async function saveSerie()
         let response = await axios.post(LINK+"api/series/one",formData);
         if(response.status===201)
         {
-            console.log("serie saved")
+            document.getElementById("serieName").value = "";
+            document.getElementById("serieYear").value = "";
+            document.getElementById("seriePoster").value="";
+            document.getElementById("serieCategory").value="";
+            document.getElementById("seasons").innerHTML="";
+            let serieForm = document.getElementById("serieForm");
+            // console.log(serieForm);
+            let button = (serieForm.querySelectorAll(".seasonsButtons div[class=\"addWrapper\"]")[1]);
+            button.style = "display:none;";
+
+            errorLabel.style.color="green";
+            errorLabel.innerHTML="Serie saved!";
+            errorLabel.style.display="flex";
         }
     }
     catch (err)
@@ -271,8 +299,9 @@ async function saveSerie()
 async function saveSeason()
 {
     console.log(6);
-    let errorLabel =document.getElementById("serieErrorLabel");
+    let errorLabel =document.getElementById("seasonErrorLabel");
     errorLabel.style.display = "none";
+    errorLabel.style.color="red"
 
     // console.log(errorLabel);
 
@@ -390,7 +419,16 @@ async function saveSeason()
         let response = await axios.post(LINK+"api/seasons/one",formData);
         if(response.status===201)
         {
-            console.log("season saved")
+            document.getElementById("serieNameSeason").value="";
+            document.getElementById("serieYearSeason").value="";
+            seasonEl.querySelector(".seasonName-input").value="";
+            seasonEl.querySelector("div[class=\"noNaWrapper season-width-fix\"] .number-input").value="";
+            checkBox.checked = false;
+            checkBox.dispatchEvent('change',{ bubbles: true })
+
+            errorLabel.style.color="green";
+            errorLabel.innerHTML="Season saved!";
+            errorLabel.style.display="flex";
         }
     }
     catch (err) {
@@ -402,8 +440,9 @@ async function saveSeason()
 
 async function saveEpisode()
 {
-    let errorLabel =document.getElementById("serieErrorLabel");
+    let errorLabel =document.getElementById("episodeErrorLabel");
     errorLabel.style.display = "none";
+    errorLabel.style.color = "red";
 
     // console.log(errorLabel);
 
@@ -470,7 +509,20 @@ async function saveEpisode()
         let response = await axios.post(LINK+"api/episodes/one",formData);
         if(response.status===201)
         {
-            console.log("episode saved")
+
+            document.getElementById("serieNameEpisode").value="";
+            document.getElementById("serieYearEpisode").value="";
+            document.getElementById("seasonNumberEpisode").value="";
+            document.getElementById("episodeName").value="";
+            document.getElementById("episodeNumber").value="";
+
+            document.getElementById("episodeFile").value="";
+
+            document.getElementById("episodeFile").dispatchEvent('change',{ bubbles: true })
+
+            errorLabel.style.color="green";
+            errorLabel.innerHTML="Episode saved!";
+            errorLabel.style.display="flex";
         }
     }
     catch (err) {

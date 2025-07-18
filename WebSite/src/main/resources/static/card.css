@@ -11,8 +11,8 @@
     grid-column: 5; */
     justify-content: center; /* Center the cards horizontally */
     /* align-items: center; Center the cards vertically */
-    width: 100%;
-    height: 100%;
+    width: calc(100% - 0.6em);
+    height: calc(100% - 0.6em);
     /* height: 100vh; Full viewport height */
 }
 
@@ -375,7 +375,7 @@ img {
     margin:auto;
 }
 
-.episode{
+.episodeFocus{
     font-size: 0.8em;
     display: inline-block;
     align-items: center;
@@ -404,7 +404,7 @@ img {
     margin-right: 0;
 }
 
-.episode:hover{
+.episodeFocus:hover{
     border: 2px solid #0088cc;
 }
 

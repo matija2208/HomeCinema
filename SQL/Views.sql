@@ -86,15 +86,28 @@ with serieLW as(
 	left join users_episodes_continue_watching on episodes.id = users_episodes_continue_watching.episodeId
 	group by series.name, series.year, userId
     )
-select series.name, series.year, seasonNumber, episodeNumber, users.name as username, timestamp
+select series.name, series.year, series.category, noOfSeasons, seasonNumber, seasons.name as seasonName, episodeNumber, episodes.name as episodeName, users.name as username, timestamp, lastWatched, CONCAT(files.fileName,files.fileExtension) as fileName, posterName
 from series
+join seriesOut on series.name = seriesOut.name and series.year = seriesOut.year
 join seasons on series.id=seasons.serieId
 join episodes on seasons.id=episodes.seasonId
+join files on episodes.fileId=files.id
 left join users_episodes_continue_watching on episodes.id = users_episodes_continue_watching.episodeId
 right join users on users.id = users_episodes_continue_watching.userId
 where lastWatched = (select lastWatched from serieLW where name = series.name and year = series.year and userId= users.id); 
 
-select* from seriesLastWatched;
+create or replace view episodesLastWatched
+as
+select episodeNumber, episodes.name as episodeName, seasonNumber, series.name, year, CONCAT(files.fileName,files.fileExtension) as fileName, timeStamp, lastWatched, users.name as username
+from episodes
+join files on files.id=episodes.fileId
+join seasons on episodes.seasonId = seasons.id
+join series on seasons.serieId = series.id
+left join users_episodes_continue_watching on episodes.id = users_episodes_continue_watching.episodeId
+join users on users.id=users_episodes_continue_watching.userId;
+
+
+select* from episodesLastWatched;
 
 select concat_ws(" ",movies.name,"-", movies.year, category) as searchParam, 'movie' as type, name, year, category, null as seasonNumber, null as seasonName, null as episodeNumber, null as episodeName
 	from series;
