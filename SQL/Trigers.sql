@@ -82,3 +82,28 @@ BEGIN
     END IF;
 END//
 DELIMITER ;
+
+delimiter //
+CREATE TRIGGER deleteMovieTimeStamps
+BEFORE DELETE ON movies
+FOR EACH ROW
+BEGIN
+	set @movieId = (SELECT id FROM movies WHERE name = OLD.name AND year = OLD.year);
+    
+    DELETE FROM users_movies_continue_watching
+    WHERE movieId = @movieId;
+END//
+delimiter ;
+
+
+delimiter //
+CREATE TRIGGER deleteEpisodeTimeStamps
+BEFORE DELETE ON episodes
+FOR EACH ROW
+BEGIN
+	set @episodeId = OLD.id;
+    
+    DELETE FROM users_episodes_continue_watching
+    WHERE episodeId = @episodeId;
+END//
+delimiter ;

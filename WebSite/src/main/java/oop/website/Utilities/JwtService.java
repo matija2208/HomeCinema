@@ -1,7 +1,6 @@
 package oop.website.Utilities;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import oop.website.Config.JwtKeyConfig;
 import org.springframework.beans.factory.annotation.Autowired;

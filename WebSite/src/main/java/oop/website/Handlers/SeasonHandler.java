@@ -1,5 +1,7 @@
 package oop.website.Handlers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.websocket.server.PathParam;
 import oop.website.Models.Episode;
 import oop.website.Models.File;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -27,29 +31,36 @@ public class SeasonHandler
     @Autowired
     FileHandler fileHandler;
 
-    public SeasonHandler()
-    {
-        super();
-    }
-    public SeasonHandler(JdbcTemplate jdbcTemplate)
+    @Autowired
+    public SeasonHandler(JdbcTemplate jdbcTemplate, FileHandler fileHandler)
     {
         super();
         this.jdbcTemplate = jdbcTemplate;
+        this.fileHandler = fileHandler;
     }
 
     @PostMapping(path = "/one", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
-    public ResponseEntity<Object> postOne(@RequestPart(name = "season", required = true) Season season, @RequestParam(name = "serieName", required = true) String serieName, @RequestParam(name = "year", required = true) int year, @RequestPart("files") MultipartFile ...files)
+    public ResponseEntity<Object> postOne(@RequestPart(name = "season", required = true) String s, @RequestParam(name = "serieName", required = true) String serieName, @RequestParam(name = "year", required = true) int year, @RequestPart(value = "files",required = false) MultipartFile ...files)
     {
         try
         {
+
+            ObjectMapper mapper = new ObjectMapper();
+            Season season = mapper.readValue(s, Season.class);
+            System.out.println(s);
+            System.out.println(season);
+            System.out.println(Arrays.toString(files));
+
             SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate).withProcedureName("insertSeason");
             simpleJdbcCall.execute(serieName, year, season.getSeasonNumber(), season.getName());
 
             if(season.getEpisodes()!=null && season.getEpisodes().size()== files.length)
             {
-                EpisodeHandler episodeHandler = new EpisodeHandler(jdbcTemplate);
-                episodeHandler.postEpisodes(season.getEpisodes(),serieName,year, season.getSeasonNumber(), files);
+                EpisodeHandler episodeHandler = new EpisodeHandler(jdbcTemplate, fileHandler);
+
+                String eps = mapper.writeValueAsString(season.getEpisodes());
+                episodeHandler.postEpisodes(eps,serieName,year, season.getSeasonNumber(), files);
             }
 
             return new ResponseEntity<>(HttpStatus.CREATED);
@@ -67,7 +78,7 @@ public class SeasonHandler
     {
         try
         {
-            String sql = "select seasonName, seasonNumber from seasonsOut where year = ? and serieName = ? and seasonNumber = ?";
+            String sql = "select seasonName as name, seasonNumber from seasonsOut where year = ? and serieName = ? and seasonNumber = ?";
             Season season = jdbcTemplate.queryForObject(sql, new Object[]{year,serieName,seasonNumber},new BeanPropertyRowMapper<>(Season.class));
 
             String sql1 = "select episodeName, episodeNumber, fileName from episodesOut where serieName=? and year=? and seasonNumber=?";
@@ -117,8 +128,8 @@ public class SeasonHandler
                 fileHandler.deleteFile(fileName);
             }
 
-            String sql = "DELETE FROM seasons WHERE year = ? and serieName = ? and seasonNumber = ?";
-            jdbcTemplate.update(sql, new Object[]{year,serieName,seasonNumber});
+            String sql = "DELETE FROM seasons WHERE serieId = (SELECT id FROM series WHERE series.name = ? AND year = ?) and seasonNumber = ?";
+            jdbcTemplate.update(sql, new Object[]{serieName,year,seasonNumber});
             return new ResponseEntity<>(HttpStatus.OK);
         }
         catch (Exception e)

@@ -79,6 +79,7 @@ create table users_movies_continue_watching(
     timeStamp varchar(8) not null default "00:00:00",
     lastWatched datetime not null,
     primary key(userId, movieId),
+    unique key(userId,movieId),
     foreign key(userId) references users(id),
     foreign key(movieId) references movies(id));
     
@@ -89,5 +90,8 @@ create table users_episodes_continue_watching(
     timeStamp varchar(8) not null default "00:00:00",
     lastWatched datetime not null,
     primary key(userId, episodeId),
+    unique key(userId,episodeId),
     foreign key(userId) references users(id),
     foreign key(episodeId) references episodes(id));
+    
+drop table users_movies_continue_watching

@@ -33,18 +33,56 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
+        final String cookieHeader = request.getHeader("Cookie");
+        String jwt=null;
         final String username;
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String uri=(request.getRequestURI());
+        System.out.println(uri);
+
+        if(uri.contains("login") || uri.contains("auth/login"))
+        {
             filterChain.doFilter(request, response);
-            System.out.println("Error: Auth header: " + authHeader);
             return;
         }
 
 
-        jwt = authHeader.substring(7);
+        if (cookieHeader == null || cookieHeader.isEmpty()) {
+            if (!uri.contains("/login") && request.getMethod().equals("GET") && !uri.contains("/favicon.ico")) {
+                String server = "https://" + request.getServerName();
+                response.sendRedirect(server + "/login/index.html");
+            }
+            else
+            {
+
+                filterChain.doFilter(request, response);
+            }
+            return;
+        }
+        System.out.println("Cookie header: " + cookieHeader);
+
+        String[] cookies = cookieHeader.split("; ");
+
+        for (String cookie : cookies)
+        {
+            System.out.println(cookie);
+            if(cookie.startsWith("jwt="))
+                jwt=cookie.substring(4);
+        }
+
+        if(jwt==null)
+        {
+            if (!uri.contains("/login") && request.getMethod().equals("GET") && !uri.contains("/favicon.ico")) {
+                String server = "https://" + request.getServerName();
+                response.sendRedirect(server + "/login/index.html");
+            }
+            else
+            {
+
+                filterChain.doFilter(request, response);
+            }
+            return;
+        }
 
         if(jwtService.isTokenValid(jwt))
         {
@@ -60,8 +98,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     if (user != null) {
                         var UserAuth = new UsernamePasswordAuthenticationToken(user.getName(), user.getPassword(), null);
                         SecurityContextHolder.getContext().setAuthentication(UserAuth);
+                        filterChain.doFilter(request, response);
+                        return;
                     } else {
-                        System.out.println("Error: Authentication Failed");
+                        if (!uri.contains("/login") && request.getMethod().equals("GET")) {
+                            String server = "https://" + request.getServerName();
+                            response.sendRedirect(server + "/login/index.html");
+                            return;
+                        }
+                        else
+                        {
+                            filterChain.doFilter(request, response);
+                            return;
+                        }
                     }
 
                 } catch (Exception e) {

@@ -41,7 +41,9 @@ public class FileHandler {
 
     public String saveFile(MultipartFile file) {
         try {
-            String fileName = UUID.randomUUID().toString() + "." + file.getOriginalFilename().split("\\.")[1];
+            int lastIndex = file.getOriginalFilename().lastIndexOf(".");
+            if (lastIndex == -1) {return null;}
+            String fileName = UUID.randomUUID().toString() + file.getOriginalFilename().substring(lastIndex);
             File dest = new File(rootPath + File.separator + fileName);
             dest.createNewFile();
             file.transferTo(dest);

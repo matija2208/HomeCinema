@@ -13,12 +13,13 @@ begin
 end//
 DELIMITER ;
 
+drop procedure insertEpisode;
 DELIMITER //
 create procedure insertEpisode(in seriesName varchar(200), in seriesYear int, in seasonNumber int, in episodeNumber int,in episodeName varchar(100),in fileName varchar(36))
 begin
 
 	set @serieId = (select id from series where name = seriesName and year = seriesYear);
-	set @seasonId = (select id from seasons where serieId = @serieId and seasonNumber=seasonNumber);
+	set @seasonId = (select id from seasons where serieId = @serieId and seasons.seasonNumber=seasonNumber);
 	set @fileId = (select id from files where files.fileName = fileName);
 
 	insert into episodes(seasonId,episodeNumber,name,fileId)
@@ -70,6 +71,7 @@ begin
 end//
 delimiter ;
 
+drop procedure saveWatchingTime;
 delimiter //
 create procedure saveWatchingTime(in userName varchar(100), in timeStamp varchar(8), in fileName varchar(36))
 begin
@@ -92,13 +94,36 @@ begin
         where name = userName);
     
     if(@movieId is not null) then 
-		insert into users_movies_continue_watching(userId, movieId, timeStamp,lastWatched)
-		values(@userId,@movieId,timeStamp,@lastWatched);
+		set @object = (select timeStamp from users_movies_continue_watching where userId = @userId and movieId=@movieId);
+        
+        if @object is null
+        then
+			insert into users_movies_continue_watching(userId, movieId, timeStamp,lastWatched)
+			values(@userId,@movieId,timeStamp,@lastWatched);
+		else
+			update users_movies_continue_watching
+            set users_movies_continue_watching.timeStamp = timeStamp, users_movies_continue_watching.lastWatched=@lastWatched
+            where @userId = userId and @movieId=movieId;
+		end if;
 	elseif(@episodeId is not null) then
-		insert into users_episodes_continue_watching(userId, episodeId, timeStamp, lastWatched)
-        values(@userId,@episodeId,timeStamp,@lastWatched);
+		set @object = (select timeStamp from users_episodes_continue_watching where userId = @userId and episodeId=@episodeId);
+        
+        if @object is null
+		then
+			insert into users_episodes_continue_watching(userId, episodeId, timeStamp, lastWatched)
+			values(@userId,@episodeId,timeStamp,@lastWatched);
+		else
+			update users_episodes_continue_watching
+            set users_episodes_continue_watching.timeStamp = timeStamp, lastWatched = @lastWatched
+            where userId=@userId and episodeId = @episodeId;
+		end if;
 	end if;
 end//
 delimiter ;
 
+
+call saveWatchingTime('matija','00:02:00','a2714663-2c4a-4a8b-8a98-e8db18006a12');
+
+call saveWatchingTime('matija','00:03:00','285c9aa9-a155-4639-8df4-3c2800d898c3');
+call saveWatchingTime('root','00:03:00','4514e254-f6ce-488a-a774-a23ccdf465ec');
     
