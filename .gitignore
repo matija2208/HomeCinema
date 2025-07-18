@@ -1,2 +1,4 @@
 *.jfr
 *.log
+/FRONT/
+/files/
