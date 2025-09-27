@@ -1,3 +1,5 @@
+USE HomeCinema;
+
 create or replace view moviesOut as
 select name,year,category, concat(poster.fileName,poster.fileExtension) as posterName, concat(video.fileName,video.fileExtension) as fileName 
 from movies 
@@ -18,7 +20,7 @@ order by name, year;
 create or replace view seasonsOut as
 select seasonNumber, seasons.name as seasonName, series.name as serieName, year
 from seasons join series on serieId = series.id
-order by series.name, seasonNumber;
+order by series.name, series.year, seasonNumber;
 
 create or replace view episodesOut as
 select episodeNumber, episodes.name as episodeName, seasonNumber, series.name as serieName, year, concat(files.fileName,files.fileExtension) as fileName
@@ -52,8 +54,6 @@ left join files as P on P.id = series.posterId
 GROUP BY N.serieId, users.name, episodeNumber, episodeName, S.seasonNumber, S.name, series.name,series.year,category,timeStamp,lastWatched,F.fileName,F.fileExtension,P.fileName,P.fileExtension
 order by lastWatched desc;
 
-select * from lastWatchedSeriesOut;
-
 create or replace view search
 as
 select concat_ws(" ",movies.name,"-", movies.year, category) as searchParam, 'movie' as type, name, year, category, null as seasonNumber, null as seasonName, null as episodeNumber, null as episodeName
@@ -75,9 +75,8 @@ union all select concat_ws(" ",episodes.name,series.name,"-",series.year, "S", s
     join seasons on seasons.id = episodes.seasonId
     join series on series.id = seasons.serieId;
     
-select * from search where LOWER(searchParam) LIKE LOWER("%Ispr%");
-
-create or replace view seriesLastWatched as
+create or replace view seriesLastWatched 
+as
 with serieLW as(
 	select series.name,year,max(lastWatched) as lastWatched, userId
 	from series
@@ -107,7 +106,8 @@ left join users_episodes_continue_watching on episodes.id = users_episodes_conti
 join users on users.id=users_episodes_continue_watching.userId;
 
 
-select* from episodesLastWatched;
 
-select concat_ws(" ",movies.name,"-", movies.year, category) as searchParam, 'movie' as type, name, year, category, null as seasonNumber, null as seasonName, null as episodeNumber, null as episodeName
-	from series;
+-- select * from episodesOut
+-- where serieName='testSerie' and year=2025 and (seasonNumber>2 or (seasonNumber=2 and episodeNumber>1))
+-- order by seasonNumber, episodeNumber
+-- limit 1;

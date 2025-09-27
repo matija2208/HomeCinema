@@ -217,17 +217,30 @@ img {
     float:left;
 }
 
+.bigPosterWrapper{
+    width: 100%;
+    height: min(40vw,40vh);
+    background: #111133;
+    position: relative;
+    overflow: hidden;
+}
+
 .bigPoster{
-    width:auto;
-    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
     height: auto;
-    max-height: 30vh;
+    object-fit:cover;
 
-    box-sizing: border-box;
-    object-fit: cover;
-
+    position:absolute;
     z-index: 4;
-    margin:auto;
+}
+.overlay{
+    position: absolute;
+    inset: 0;
+    /* This overlay starts transparent, ends solid #113 */
+    background: linear-gradient(to bottom, rgba(17,17,51,0) 80%, #111133 100%);
+    pointer-events: none; /* don’t block clicks */
+    z-index: 5;
 }
 
 .playButton{
@@ -397,6 +410,10 @@ img {
 .episodeNumber, .episodeName{
     float: left;
     margin-right: .2vw;
+}
+.episodeNumber{
+    float: left;
+    margin-right: 10vw;
 }
 
 .episodeTimeStamp{

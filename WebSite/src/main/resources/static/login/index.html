@@ -7,24 +7,27 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <form id="loginForm" class="container" onsubmit="event.preventDefault(); return login();">
+    <div class="container">
+        <form id="loginForm" method="POST"  >
 
-        <div class = "title-container">
-            <h1 style="text-align: center; margin: 20px 0;">HomeCinema</h1>
-        </div>
-        <div class = "username-container">
-            <input type="text" name="username" id="username" autocomplete="username" required placeholder="Enter your username">
-        </div>
-        <div class="password-container">
-            <input type="password" name="password" id="password" autocomplete="new-password" required placeholder="Enter your password">
-        </div>
-        <div class="message-container">
-            <p id="message"></p>
-        </div>
-        <div class="button-container">
-            <button type="submit" id="login-button">Login</button>
-        </div>
-    </form>
+            <div class = "title-container">
+                <h1 style="text-align: center; margin: 20px 0;">HomeCinema</h1>
+            </div>
+            <div class = "username-container">
+                <input type="text" name="username" id="username" autocomplete="username" required placeholder="Enter your username">
+            </div>
+            <div class="password-container">
+                <input type="password" name="password" id="password" autocomplete="current-password" required placeholder="Enter your password">
+            </div>
+            <div class="message-container">
+                <p id="message"></p>
+            </div>
+            <div class="button-container">
+                <button type="submit" id="login-button">Login</button>
+            </div>
+        </form>
+
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="./conf.js"></script>

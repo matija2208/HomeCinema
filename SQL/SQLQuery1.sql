@@ -20,3 +20,21 @@ where serieName = "House of Cards" and year = 2013 and seasonNumber = 1;
 
 insert into users(name,password,token)
 values('root','01061944','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QifQ.f5_-CfV6szlbP0YkrravxKTWP1KQWhnIMe_QYetxzS8');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

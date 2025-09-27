@@ -1,5 +1,6 @@
 package oop.website.Handlers;
 
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,10 +8,7 @@ import jakarta.websocket.server.PathParam;
 import oop.website.Models.User;
 import oop.website.Utilities.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
@@ -28,12 +26,15 @@ public class UserHandler
     @Autowired
     JwtService jwtService;
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ResponseBody
-    public ResponseEntity<Object> login(@RequestBody User user, HttpServletResponse response)
+    public ResponseEntity<Object> login(@RequestParam("username") String username, @RequestParam("password") String password, HttpServletResponse response)
     {
         try
         {
+            User user = new User();
+            user.setName(username);
+            user.setPassword(password);
             System.out.println(user.getName());
             System.out.println(user.getPassword());
             String sql = "select name, password from users where name = ?";
@@ -41,14 +42,14 @@ public class UserHandler
 
             if(u == null)
             {
-                return new ResponseEntity<>("Invalid username", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema.servehttp.com/login?error=Invalid username&username="+username+"&password="+password+"'</script></body></html>", HttpStatus.UNAUTHORIZED);
             }
 
             System.out.println(u.getPassword());
             System.out.println(user.getPassword());
             if(!u.getPassword().equals(user.getPassword()) && !user.isPasswordEqual(u.getPassword()))
             {
-                return new ResponseEntity<>("Invalid password", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema.servehttp.com/login?error=Invalid password&username="+username+"&password="+password+"'</script></body></html>", HttpStatus.UNAUTHORIZED);
             }
             else
             {
@@ -62,13 +63,13 @@ public class UserHandler
 
                 response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-                return ResponseEntity.ok("Login successful");
+                return ResponseEntity.ok("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema.servehttp.com'</script></body></html>");
             }
         }
         catch(Exception e)
         {
             e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema.servehttp.com/login?error="+e.getMessage()+"&username="+username+"&password="+password+"'</script></body></html>", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -148,7 +149,7 @@ public class UserHandler
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/chck")
+    @GetMapping("/check")
     @ResponseBody
     public ResponseEntity<Object> checkCookie(HttpServletRequest request)
     {

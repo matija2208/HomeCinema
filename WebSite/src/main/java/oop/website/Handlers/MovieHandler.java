@@ -91,7 +91,7 @@ public class MovieHandler
                 jdbcTemplate.update(sql, posterName, posterExtension);
             }
 
-            SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("insertMovie");
+            SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withCatalogName("HomeCinema").withProcedureName("insertMovie");
 
             call.execute(movie.getName(), movie.getYear(), movie.getCategory(), movie.getFileName(), posterName);
             return new ResponseEntity<>(HttpStatus.CREATED);
@@ -154,9 +154,9 @@ public class MovieHandler
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
             String sql = "SELECT movieName as name, year, fileName, posterName, category, timeStamp, lastWatched FROM lastWatchedMoviesOut WHERE username = ? AND movieName = ? AND year = ?;";
-            LastWatchedMovie movies = jdbcTemplate.queryForObject(sql, new Object[]{username,name,year}, new BeanPropertyRowMapper<>(LastWatchedMovie.class));
+            LastWatchedMovie movie = jdbcTemplate.queryForObject(sql, new Object[]{username,name,year}, new BeanPropertyRowMapper<>(LastWatchedMovie.class));
 
-            return new ResponseEntity<>(movies, HttpStatus.OK);
+            return new ResponseEntity<>(movie, HttpStatus.OK);
         }
         catch (Exception e)
         {

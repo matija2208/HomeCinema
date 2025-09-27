@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Controller
@@ -58,7 +59,7 @@ public class EpisodeHandler
                 String sql = "INSERT INTO files(fileName, fileExtension) VALUES(?,?)";
                 jdbcTemplate.update(sql, episode.getFileName(), fileExtension);
 
-                SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("insertEpisode");
+                SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withCatalogName("HomeCinema").withProcedureName("insertEpisode");
 
                 System.out.println(episode);
 
@@ -112,7 +113,7 @@ public class EpisodeHandler
     {
         try
         {
-            String sql = "SELECT episodeNumber, episodeName,fileName from episodesOut where serieName = ? and year = ? and seasonNumber = ? and episodeNumber = ?";
+            String sql = "SELECT episodeNumber, episodeName as name,fileName from episodesOut where serieName = ? and year = ? and seasonNumber = ? and episodeNumber = ?";
             Episode e = jdbcTemplate.queryForObject(sql, new Object[]{serieName,year,seasonNumber,episodeNumber}, new BeanPropertyRowMapper<>(Episode.class));
             return new ResponseEntity<>(e, HttpStatus.OK);
         }
@@ -128,7 +129,7 @@ public class EpisodeHandler
     {
         try
         {
-            String sql = "SELECT episodeNumber, episodeName, fileName from episodesOut where serieName = ? and year = ? and seasonNumber = ?";
+            String sql = "SELECT episodeNumber, episodeName as name, fileName from episodesOut where serieName = ? and year = ? and seasonNumber = ?";
             List<Episode> episodes = jdbcTemplate.query(sql, new Object[]{serieName,year,seasonNumber}, new BeanPropertyRowMapper<>(Episode.class));
             return new ResponseEntity<>(episodes, HttpStatus.OK);
         }
@@ -176,6 +177,29 @@ public class EpisodeHandler
         {
             e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/one/nextEpisode")
+    @ResponseBody
+    public ResponseEntity<Object> getNextEpisode(@PathParam("name") String name, @PathParam("year") int year, @PathParam("seasonNumber") int seasonNumber, @PathParam("episodeNumber") int episodeNumber)
+    {
+        try
+        {
+            String sql = "select * from episodesOut\n" +
+                    "where serieName=? and year=? and (seasonNumber>? or (seasonNumber=? and episodeNumber>?))\n" +
+                    "order by seasonNumber, episodeNumber\n" +
+                    "limit 1;";
+
+
+            Map<String,Object> ep = jdbcTemplate.queryForMap(sql,name,year,seasonNumber,seasonNumber,episodeNumber);
+
+            return new ResponseEntity<>(ep, HttpStatus.OK);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 }

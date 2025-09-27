@@ -1,3 +1,5 @@
+USE HomeCinema;
+
 delimiter //
 create trigger deleteMovie
 after delete 
@@ -19,25 +21,25 @@ begin
 end//
 delimiter ;
 
-delimiter //
-create trigger deleteSong
-after delete 
-on songs for each row
-begin
-	set @fileId = old.fileId;
-    delete from files where id = @fileId;
-end//
-delimiter ;
+-- delimiter //
+-- create trigger deleteSong
+-- after delete 
+-- on songs for each row
+-- begin
+-- 	set @fileId = old.fileId;
+--     delete from files where id = @fileId;
+-- end//
+-- delimiter ;
 
-delimiter //
-create trigger removeSongFromPlaylists
-before delete 
-on songs for each row
-begin
-	set @songId = old.id;
-    delete from songs_playlists where songs_playlists.idSong = @songId;
-end//
-delimiter ;
+-- delimiter //
+-- create trigger removeSongFromPlaylists
+-- before delete 
+-- on songs for each row
+-- begin
+-- 	set @songId = old.id;
+--     delete from songs_playlists where songs_playlists.idSong = @songId;
+-- end//
+-- delimiter ;
 
 delimiter //
 create trigger deleteSeason
@@ -59,7 +61,6 @@ begin
 end//
 delimiter ;
 
-drop trigger checkExtension;
 delimiter //
 create trigger deleteSeriePoster
 after delete
@@ -105,5 +106,20 @@ BEGIN
     
     DELETE FROM users_episodes_continue_watching
     WHERE episodeId = @episodeId;
+END//
+delimiter ;
+
+delimiter //
+CREATE TRIGGER deleteUser
+BEFORE DELETE ON users
+FOR EACH ROW
+BEGIN
+	set @userId = OLD.id;
+    
+    DELETE FROM users_episodes_continue_watching
+    WHERE userId=@userId;
+    
+    DELETE FROM users_movies_continue_watching
+    WHERE userId=@userId;
 END//
 delimiter ;

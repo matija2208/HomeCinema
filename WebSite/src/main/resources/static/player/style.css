@@ -1,0 +1,456 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    font-family: 'Consolas', monospace;
+    color: #08c;
+    cursor: none;
+}
+@media(min-width: 1000px) and (max-width: 1800px) {
+    body {
+        font-size: 1.5em;
+    }
+}
+@media(min-width: 1800px) and (max-width: 2200px) {
+    body {
+        font-size: 2em;
+    }
+}
+@media(min-width: 2200px) {
+    body {
+        font-size: 3em;
+    }
+}
+
+#videoPlayer{
+    width: 100%;
+    height: 100%;
+
+    position:fixed;
+    top:0;
+    left:0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    box-sizing: border-box;
+
+    background-color: #000;
+    color: #0088cc;
+    z-index: 0;
+}
+
+.controls{
+    width: 100%;
+    height: 100%;
+
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+
+    position:fixed;
+    top:0;
+    left:0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    box-sizing: border-box;
+    z-index: 1;
+
+    background: linear-gradient(
+            to bottom,
+            #113 0%,
+            rgba(17, 17, 51, 0.8) 12.5%,
+            rgba(17, 17, 51, 0.8) 25%,
+            rgba(17, 17, 51, 0.2) 37.5%,
+            rgba(17, 17, 51, 0.0) 50%,
+            rgba(17, 17, 51, 0.2) 62.5%,
+            rgba(17, 17, 51, 0.8) 75%,
+            rgba(17, 17, 51, 0.8) 87.5%,
+            #113 100%
+    );
+    color: #0088cc;
+}
+
+.visible{
+    opacity: 1;
+    pointer-events: auto;
+    cursor:default;
+}
+
+
+
+.Title{
+    width:100%;
+    display: flex;
+    align-items:center;
+    font-size:1.2em;
+    position:absolute;
+    top:0;
+    left:0;
+}
+
+.titleText{
+    font-size: 1em;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.extra{
+    font-size: 0.6em;
+    margin-top: 0;
+    margin-bottom: 0;
+    color:#08c8;
+}
+
+.buttonSvg{
+    fill:#08c8;
+    color: #08c8;
+
+    height: 2em;
+    width: 2em;
+    display: flex;
+}
+.buttonSvg:hover{
+    fill:#0088cc;
+    color: #0088cc;
+}
+
+.volumeButtonSvg{
+    color: #08c8;
+    height: 2em;
+    width: 2em;
+    display: flex;
+}
+.volumeButtonSvg:hover{
+    color: #0088cc;
+}
+
+.playButton{
+    height: 2em;
+    width: 2em;
+    background: none;
+    border: none;
+    font-size: 1em;
+
+    margin: .5em;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.exit{
+    height: 4em;
+    width: 4em;
+    background: none;
+    border: none;
+
+    margin: .5em;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tray{
+    width:100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.timeLine {
+    width: 80%;
+    margin: auto;
+    height: 0.5em;
+    background: linear-gradient(to right, #08c8 0%, #111133 0%);
+    border-radius: 0.25em;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+/* Track (invisible, since we use background) */
+.timeLine::-webkit-slider-runnable-track {
+    background: transparent;
+    height: 0.5em;
+}
+.timeLine::-moz-range-track {
+    background: transparent;
+    height: 0.5em;
+}
+
+/* Thumb */
+.timeLine::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    background: #08c;
+    margin-top: -0.25em;
+    position: relative;
+    z-index: 2;
+}
+.timeLine::-moz-range-thumb {
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    background: #08c;
+    border: none;
+    position: relative;
+    z-index: 2;
+}
+
+.hover::-webkit-slider-thumb,
+.hover::-moz-range-thumb {
+    background: #08c;
+    transform: scale(2);
+}
+
+.volume {
+    display: flex;
+    opacity: 0;
+    width: 0;
+    margin: auto;
+    height: 0.8em;
+    background: linear-gradient(to right, #08c8 0%, #111133 0%);
+    border-radius: 0.4em;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    transition: width 300ms linear, opacity 300ms linear;
+}
+
+/* Track (invisible, since we use background) */
+.volume::-webkit-slider-runnable-track {
+    background: transparent;
+    height: 0.8em;
+}
+.volume::-moz-range-track {
+    background: transparent;
+    height: 0.8em;
+}
+
+/* Thumb */
+.volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 1.6em;
+    height: 1.6em;
+    border-radius: 50%;
+    background: #08c;
+    margin-top: -0.4em;
+    position: relative;
+    z-index: 2;
+}
+.volume::-moz-range-thumb {
+    width: 1.6em;
+    height: 1.6em;
+    border-radius: 50%;
+    background: #08c;
+    border: none;
+    position: relative;
+    z-index: 2;
+}
+
+.volume.hover::-webkit-slider-thumb,
+.volume.hover::-moz-range-thumb {
+    background: #08c;
+    transform: scale(2);
+}
+
+.bottomButtons{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.leftButtons{
+    float:left;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: left;
+}
+
+.rightButtons{
+    float: right;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: right;
+}
+
+.volumeChanger{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.volumeChanger:hover .volume{
+    width:10em;
+    opacity: 1;
+}
+
+.timeLineContainer{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.timeStamp{
+    width:auto;
+    margin:auto;
+    font-size: 0.8em;
+    color: #0088cc;
+}
+
+.episodes{
+    position:absolute;
+
+    font-size: 0.8em;
+    right:3.75em;
+    bottom: 5.25em;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+
+    background-color:#113;
+    border: 2px solid #08c;
+    box-sizing: border-box;
+
+    width: min(500px, calc(100vw - 7.5em));
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity 500ms ease-in-out;
+
+    z-index: 4;
+}
+
+.seasonNameContainer{
+    width:90%;
+    margin-left: 5%;
+    margin-right: 5%;
+    display: flex;
+    flex-direction: row;
+
+    flex-wrap: nowrap;
+
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 2px solid #08c;
+
+    font-size: 0.8em;
+}
+
+.seasonName{
+    text-wrap: nowrap;
+    margin-left: 1em;
+}
+
+.seasonButtonSvg{
+    margin-right: 1em;
+}
+
+.episodeContainer{
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    margin:auto;
+
+    max-height: 10em;
+    overflow-y: scroll;
+    scrollbar-color: #08c #113;
+}
+
+.episodesContainer::-webkit-scrollbar-track{
+    background: #113;
+}
+
+.episodesContainer::-webkit-slider-thumb{
+    background: #08c;
+}
+
+.episodeFocus{
+    font-size: 0.8em;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+
+    background-color: #113;
+    color: #0088cc;
+    padding: .2em;
+
+    margin-top: .2em;
+    margin-bottom: .2em;
+
+    box-sizing: border-box;
+
+    border:2px solid #113;
+}
+
+.episodeNumber, .episodeName{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    margin:.2em;
+}
+.episodeNumber{
+    margin-right: 10%;
+}
+
+.epNoNameWrapper
+{
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: center;
+}
+.episodeTimeStamp{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    margin:.2em;
+    margin-right: 0;
+    margin-left: 20%;
+    align-items: center;
+}
+
+.episodeFocus:hover{
+    border: 2px solid #0088cc;
+}
+
+.episodes:hover{
+    opacity: 1;
+    visibility: visible;
+}
+
+.thisEpisodeName{
+    position: absolute;
+    left:50%;
+    transform: translateX(-50%);
+
+    width: fit-content;
+    font-size: 1em;
+    color: #0088cc88;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin:auto;
+}

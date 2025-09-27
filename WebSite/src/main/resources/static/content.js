@@ -207,7 +207,6 @@ async function loadContent()
     }
 }
 
-loadContent();
 
 let changeSeasonButtonValue=true;
 function changeSeasonButton()
@@ -255,29 +254,35 @@ async function changeSeason(name,year,seasonNumber)
             document.getElementById("focusSeasonButtonLabel").innerHTML="";
         }
 
-        console.log(svg);
+        // console.log(svg);
+        let timeStamps=[];
+        try
+        {
+            response = await axios.get(LINK+"api/seasons/one/lastWatched",{
+                params: {
+                    name: name,
+                    year: year,
+                    seasonNumber: season.seasonNumber
+                }
+            });
+
+            timeStamps = response.data;
+        }
+        catch (err)
+        {
+            console.log(err);
+        }
 
         let episodeContainer = document.getElementById("episodesFocus");
         episodeContainer.innerHTML="";
+        let i=0;
         for(let episode of season.episodes)
         {
             let timeStamp=null;
-            try
+            if(timeStamps.length>i && timeStamps[i].episodeNumber === episode.episodeNumber)
             {
-                response = await axios.get(LINK+"api/episodes/one/lastWatched",{
-                    params: {
-                        name: name,
-                        year: year,
-                        seasonNumber: season.seasonNumber,
-                        episodeNumber: episode.episodeNumber
-                    }
-                });
-
-                timeStamp = response.data;
-            }
-            catch (err)
-            {
-                console.log(err);
+                timeStamp=timeStamps[i].timeStamp;
+                i++;
             }
 
             episodeContainer.innerHTML+=`
@@ -340,6 +345,16 @@ async function loadFocus()
 
             let movie = response.data;
 
+            if(movie.posterName!==null)
+            {
+                console.log(1);
+                document.getElementById("focusPoster").src=(LINK+"api/files/?fileName="+movie.posterName);
+            }
+            else
+            {
+                document.getElementById("focusPoster").src="";
+            }
+
             document.getElementById("seasonFocusContainer").style.display="none";
             document.getElementById("seasonAndEpisodeFocus").style.display="none";
             document.getElementById("episodesFocus").style.display="none"
@@ -350,7 +365,7 @@ async function loadFocus()
 
 
             document.getElementById("playButton").onclick=()=>{
-                location.href=`./player?type=movie&name=${movie.name}&year=${movie.name}`
+                location.href=`./player?type=movie&name=${movie.name}&year=${movie.year}`
             }
 
             try {
@@ -448,7 +463,7 @@ async function loadFocus()
                 document.getElementById("seasonAndEpisodeFocus").style.display="block";
 
                 document.getElementById("playButton").onclick=()=>{
-                    location.href=`./player?type=movie&name=${serie.name}&year=${serie.year}&seasonNumber=${lastWatched.seasonNumber}&episodeNumber=${lastWatched.episodeNumber}`;
+                    location.href=`./player?type=serie&name=${serie.name}&year=${serie.year}&seasonNumber=${lastWatched.seasonNumber}&episodeNumber=${lastWatched.episodeNumber}`;
                 }
             }
             catch(err)
@@ -457,7 +472,7 @@ async function loadFocus()
                 document.getElementById("timestampFocus").style.display="none";
 
                 document.getElementById("playButton").onclick=()=>{
-                    location.href=`./player?type=movie&name=${serie.name}&year=${serie.year}&seasonNumber=${serie.seasons[findFirstEpisode(serie.seasons)].seasonNumber}&episodeNumber=${serie.seasons[findFirstEpisode(serie.seasons)].episodes[0].episodeNumber}`;
+                    location.href=`./player?type=serie&name=${serie.name}&year=${serie.year}&seasonNumber=${serie.seasons[findFirstEpisode(serie.seasons)].seasonNumber}&episodeNumber=${serie.seasons[findFirstEpisode(serie.seasons)].episodes[0].episodeNumber}`;
                 }
             }
 
@@ -471,7 +486,7 @@ async function loadFocus()
 
             if(lastWatched===null)
             {
-                changeSeason(serie.name,serie.year,1);
+                changeSeason(serie.name,serie.year,serie.seasons[0].seasonNumber);
             }
             else
             {
@@ -501,3 +516,6 @@ document.addEventListener('click', function(event){
         window.history.pushState({}, '', Url);
     }
 } )
+
+loadContent();
+loadFocus();

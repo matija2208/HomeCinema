@@ -1,7 +1,8 @@
 async function saveMovie() {
     let errorLabel =document.getElementById("movieErrorLabel");
-    errorLabel.style.display = "none";
     errorLabel.style.color="red";
+    errorLabel.innerHTML="Saving movie...";
+    errorLabel.style.display = "flex";
 
     let name = document.getElementById("movieName").value;
     let year = document.getElementById("movieYear").value;
@@ -56,11 +57,14 @@ async function saveMovie() {
             document.getElementById("movieName").value = "";
             document.getElementById("movieYear").value = "";
             document.getElementById("moviePoster").value="";
+
+            document.getElementById("moviePoster").dispatchEvent(new Event('change',{bubbles:true}))
             document.getElementById("movieFile").value="";
+            document.getElementById("movieFile").dispatchEvent(new Event('change',{bubbles:true}))
             document.getElementById("movieCategory").value="";
 
             errorLabel.style.color="green";
-            errorLabel.innerHTML="Episode saved!";
+            errorLabel.innerHTML="Movie saved!";
             errorLabel.style.display="flex";
         }
 
@@ -125,6 +129,8 @@ async function saveSerie()
     let errorLabel =document.getElementById("serieErrorLabel");
     errorLabel.style.display = "none";
     errorLabel.style.color = "red";
+    errorLabel.innerHTML="Saving serie...";
+    errorLabel.style.display="flex";
 
     // console.log(errorLabel);
 
@@ -161,7 +167,7 @@ async function saveSerie()
     // });
 
     let seasons = [];
-
+    let files = [];
     let seasonsEl = document.querySelectorAll("#serieForm .season");
     // console.log(seasonsEl);
     seasonsEl.forEach(seasonEl => {
@@ -180,20 +186,20 @@ async function saveSerie()
 
         let episodes = []
 
-        let files = null;
+
         let checkBox=(seasonEl.querySelector("input[type=\"checkbox\"]"));
 
         console.log(checkBox.checked)
 
         if (checkBox.checked)
         {
-            files = seasonEl.querySelector('input[type="file"][class="episodeFiles"]').files;
-            console.log(files);
-            if (files !== null && files.length > 0)
-            {
-                for (let i = 0; i < files.length; i++)
-                    formData.append("files", files[i]);
-            }
+            files.push(...(seasonEl.querySelector('input[type="file"][class="episodeFiles"]').files));
+            // console.log(files);
+            // if (files !== null && files.length > 0)
+            // {
+            //     for (let i = 0; i < files.length; i++)
+            //         formData.append("files", files[i]);
+            // }
         }
 
         let i = 0;
@@ -201,12 +207,12 @@ async function saveSerie()
 
         console.log(episodesEl.length);
 
-        if (files!==null && files.length !== episodesEl.length)
-        {
-            errorLabel.innerHTML = "Diferent number of files and added episodes.";
-            errorLabel.style.display = "flex";
-            return;
-        }
+        // if (files!==null && files.length !== episodesEl.length)
+        // {
+        //     errorLabel.innerHTML = "Diferent number of files and added episodes.";
+        //     errorLabel.style.display = "flex";
+        //     return;
+        // }
         console.log(5);
         episodesEl.forEach(episodeEl => {
             console.log(7);
@@ -236,13 +242,15 @@ async function saveSerie()
 
                 let filename = episodeFile?.name;
 
-                formData.append("files", episodeFile);
+                // formData.append("files", episodeFile);
+                files.push(episodeFile)
                 episodes.push({ name: episodeName, episodeNumber: Number(episodeNumber), fileName: filename });
             }
             else
             {
                 console.log(2);
                 let filename = files[i]?.name;
+                i++;
                 episodes.push({ name: episodeName, episodeNumber: Number(episodeNumber), fileName: filename });
             }
         });
@@ -251,6 +259,14 @@ async function saveSerie()
         seasons.push({ name: seasonName, seasonNumber: Number(seasonNumber), episodes: episodes });
 
     });
+
+    let seasonsCopy= JSON.parse(JSON.stringify(seasons));
+
+    let i=0;
+    for(let season of seasons)
+    {
+        season.episodes=null;
+    }
 
     let serie = {
         name: name,
@@ -262,21 +278,55 @@ async function saveSerie()
     }
 
     formData.append("serie", JSON.stringify(serie));
-    // console.log(serie);
+    console.log(seasonsCopy);
 
-    for (const pair of formData.entries()) {
-            console.log(`${pair[0]}: ${pair[1]}`);
-    }
+    // for (let file of files) {
+    //         console.log(file);
+    // }
 
     try
     {
         let response = await axios.post(LINK+"api/series/one",formData);
+
+        let i=0;
+
+        for(let season of seasonsCopy)
+        {
+            for(let episode of season.episodes)
+            {
+                let fd = new FormData();
+
+                fd.append("file",files[i]);
+                i++;
+
+                fd.append("episode",JSON.stringify(episode));
+                fd.append("serieName",serie.name);
+                fd.append("year",serie.year);
+                fd.append("seasonNumber",season.seasonNumber);
+
+                errorLabel.innerHTML=`Uploading: S${season.seasonNumber}E${episode.episodeNumber}`;
+                errorLabel.style.display="flex";
+
+                try
+                {
+                    let response = await axios.post("api/episodes/one",fd);
+                    console.log("Uploaded episode: "+season.seasonNumber+episode.episodeNumber);
+                }
+                catch(err)
+                {
+                    console.log(err);
+                }
+            }
+        }
+
         if(response.status===201)
         {
             document.getElementById("serieName").value = "";
             document.getElementById("serieYear").value = "";
             document.getElementById("seriePoster").value="";
+            document.getElementById("seriePoster").dispatchEvent(new Event('change',{bubbles:true}));
             document.getElementById("serieCategory").value="";
+
             document.getElementById("seasons").innerHTML="";
             let serieForm = document.getElementById("serieForm");
             // console.log(serieForm);
@@ -302,6 +352,9 @@ async function saveSeason()
     let errorLabel =document.getElementById("seasonErrorLabel");
     errorLabel.style.display = "none";
     errorLabel.style.color="red"
+
+    errorLabel.innerHTML="Saving season...";
+    errorLabel.style.display="flex";
 
     // console.log(errorLabel);
 
@@ -336,7 +389,7 @@ async function saveSeason()
 
     let episodes = []
 
-    let files = null;
+    let files = [];
     let checkBox=(seasonEl.querySelector("input[type=\"checkbox\"]"));
 
     console.log(checkBox.checked)
@@ -344,12 +397,12 @@ async function saveSeason()
     if (checkBox.checked)
     {
         files = seasonEl.querySelector('input[type="file"][class="episodeFiles"]').files;
-        console.log(files);
-        if (files !== null && files.length > 0)
-        {
-            for (let i = 0; i < files.length; i++)
-                formData.append("files", files[i]);
-        }
+        // console.log(files);
+        // if (files !== null && files.length > 0)
+        // {
+        //     for (let i = 0; i < files.length; i++)
+        //         formData.append("files", files[i]);
+        // }
     }
 
     let i = 0;
@@ -391,32 +444,61 @@ async function saveSeason()
             }
 
             let filename = episodeFile?.name;
-
-            formData.append("files", episodeFile);
+            files.push(episodeFile);
+            //formData.append("files", episodeFile);
             episodes.push({ name: episodeName, episodeNumber: Number(episodeNumber), fileName: filename });
         }
         else
         {
             console.log(2);
             let filename = files[i]?.name;
+            i++;
             episodes.push({ name: episodeName, episodeNumber: Number(episodeNumber), fileName: filename });
         }
     });
     console.log(8);
 
-    let season = { name: seasonName, seasonNumber: Number(seasonNumber), episodes: episodes };
+    let season = { name: seasonName, seasonNumber: Number(seasonNumber), episodes: null };
     formData.append("serieName", name);
     formData.append("year", year.toString());
     formData.append("season", JSON.stringify(season));
 
-    for (const pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
-    }
-    console.log(season);
+    // for (const pair of formData.entries()) {
+    //     console.log(`${pair[0]}: ${pair[1]}`);
+    // }
+    // console.log(season);
 
     try
     {
         let response = await axios.post(LINK+"api/seasons/one",formData);
+
+        let i=0;
+        for(let episode of episodes)
+        {
+            console.log(episode);
+            let fd = new FormData();
+
+            fd.append("file",files[i]);
+            i++;
+            fd.append("episode",JSON.stringify(episode));
+            fd.append("serieName", name);
+            fd.append("year",year);
+            fd.append("seasonNumber",season.seasonNumber);
+
+
+            errorLabel.innerHTML=`Uploading: S${season.seasonNumber}E${episode.episodeNumber}`;
+            errorLabel.style.display="flex";
+
+            try
+            {
+                let res =await axios.post(LINK+"api/episodes/one",fd);
+            }
+            catch(err)
+            {
+                console.log(err);
+            }
+        }
+
         if(response.status===201)
         {
             document.getElementById("serieNameSeason").value="";
@@ -424,7 +506,10 @@ async function saveSeason()
             seasonEl.querySelector(".seasonName-input").value="";
             seasonEl.querySelector("div[class=\"noNaWrapper season-width-fix\"] .number-input").value="";
             checkBox.checked = false;
-            checkBox.dispatchEvent('change',{ bubbles: true })
+            checkBox.dispatchEvent(new Event('change',{bubbles:true}))
+
+            seasonEl.querySelector('#seasonEpisodes').innerHTML="";
+            seasonEl.querySelectorAll('.episodesButtons .addWrapper')[1].style.display="none";
 
             errorLabel.style.color="green";
             errorLabel.innerHTML="Season saved!";
@@ -441,8 +526,10 @@ async function saveSeason()
 async function saveEpisode()
 {
     let errorLabel =document.getElementById("episodeErrorLabel");
-    errorLabel.style.display = "none";
+    errorLabel.style.display = "flex";
     errorLabel.style.color = "red";
+    errorLabel.innerHTML="Saving episode...";
+    errorLabel.style.display="flex";
 
     // console.log(errorLabel);
 
@@ -518,7 +605,7 @@ async function saveEpisode()
 
             document.getElementById("episodeFile").value="";
 
-            document.getElementById("episodeFile").dispatchEvent('change',{ bubbles: true })
+            document.getElementById("episodeFile").dispatchEvent(new Event('change',{ bubbles: true }))
 
             errorLabel.style.color="green";
             errorLabel.innerHTML="Episode saved!";
@@ -534,7 +621,11 @@ async function saveEpisode()
 
 async function search(searchParam)
 {
-    if (searchParam.length > 3)
+    let cardContainer =
+        document.getElementById("cardContainer");
+
+    cardContainer.innerHTML='';
+    if (searchParam.length > 2)
     {
         try
         {
@@ -544,11 +635,8 @@ async function search(searchParam)
 
             let results=response.data;
 
-            let cardContainer =
-                document.getElementById("cardContainer");
 
-            cardContainer.innerHTML='';
-
+            let div =  document.createElement('div');
             for(let result of results)
             {
                 console.log(result);
@@ -564,7 +652,7 @@ async function search(searchParam)
                             ${result.category!==null? `<p class = "extra">${result.category}</p>`:""}
                         </div>
                     `;
-                    cardContainer.appendChild(card);
+                    div.appendChild(card);
                     card.onclick=()=>deleteDl(result.type,result.name,result.year,null,null);
                 }
                 else if(result.type === 'season')
@@ -576,7 +664,7 @@ async function search(searchParam)
                             <p class = "title">${result.seasonNumber+(result.seasonName!==null?" "+result.seasonName:"")}</p>
                         </div>
                     `;
-                    cardContainer.appendChild(card);
+                    div.appendChild(card);
                     card.onclick=()=>deleteDl(result.type,result.name,result.year,result.seasonNumber,null);
 
                 }
@@ -590,12 +678,13 @@ async function search(searchParam)
                             <p class = "title">${result.episodeNumber+(result.episodeName!==null?" "+result.episodeName:"")}</p>
                         </div>
                     `;
-                    cardContainer.appendChild(card);
+                    div.appendChild(card);
                     card.onclick=()=>deleteDl(result.type,result.name,result.year,result.seasonNumber,result.episodeNumber);
 
                 }
             }
 
+            cardContainer.innerHTML=div.innerHTML;
 
             console.log(response);
         }

@@ -31,7 +31,13 @@ public class SearchHandler
 
             String sql = "SELECT * FROM searchAll WHERE LOWER(searchParam) LIKE LOWER(?) ORDER BY CASE WHEN LOWER(searchParam) LIKE LOWER(?) THEN 1 WHEN LOWER(searchParam) LIKE LOWER(?) THEN 2 WHEN LOWER(searchParam) LIKE LOWER(?) THEN 3 ELSE 4 END, CASE WHEN type='movie' OR type='serie' THEN 1 WHEN type='season' THEN 2 WHEN type='episode' THEN 3 ELSE 4 END,  SearchParam";
 
-            List<SearchResult> result = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(SearchResult.class), "%"+searchParam+"%", searchParam, searchParam+"%", "%"+searchParam+"%");
+            StringBuilder t = new StringBuilder("%");
+            for(char c : searchParam.toCharArray())
+            {
+                t.append(c);
+                t.append("%");
+            }
+            List<SearchResult> result = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(SearchResult.class), t.toString(), searchParam, searchParam+"%", "%"+searchParam+"%");
             return new ResponseEntity<>(result, HttpStatus.OK);
         }
         catch (Exception e)
@@ -52,8 +58,13 @@ public class SearchHandler
 
 
             String sql = "SELECT * FROM search WHERE LOWER(searchParam) LIKE LOWER(?) ORDER BY CASE WHEN LOWER(searchParam) LIKE LOWER(?) THEN 1 WHEN LOWER(searchParam) LIKE LOWER(?) THEN 2 WHEN LOWER(searchParam) LIKE LOWER(?) THEN 3 ELSE 4 END,  SearchParam";
-
-            List<SearchResult> result = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(SearchResult.class), "%"+searchParam+"%", searchParam, searchParam+"%", "%"+searchParam+"%");
+            StringBuilder t = new StringBuilder("%");
+            for(char c : searchParam.toCharArray())
+            {
+                t.append(c);
+                t.append("%");
+            }
+            List<SearchResult> result = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(SearchResult.class), t.toString(), searchParam, searchParam+"%", "%"+searchParam+"%");
             return new ResponseEntity<>(result, HttpStatus.OK);
         }
         catch (Exception e)

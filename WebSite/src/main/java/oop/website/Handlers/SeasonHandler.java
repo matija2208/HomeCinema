@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.websocket.server.PathParam;
 import oop.website.Models.Episode;
+import oop.website.Models.EpisodeLastWatched;
 import oop.website.Models.File;
 import oop.website.Models.Season;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,7 +54,7 @@ public class SeasonHandler
             System.out.println(season);
             System.out.println(Arrays.toString(files));
 
-            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate).withProcedureName("insertSeason");
+            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate).withCatalogName("HomeCinema").withProcedureName("insertSeason");
             simpleJdbcCall.execute(serieName, year, season.getSeasonNumber(), season.getName());
 
             if(season.getEpisodes()!=null && season.getEpisodes().size()== files.length)
@@ -81,7 +83,7 @@ public class SeasonHandler
             String sql = "select seasonName as name, seasonNumber from seasonsOut where year = ? and serieName = ? and seasonNumber = ?";
             Season season = jdbcTemplate.queryForObject(sql, new Object[]{year,serieName,seasonNumber},new BeanPropertyRowMapper<>(Season.class));
 
-            String sql1 = "select episodeName, episodeNumber, fileName from episodesOut where serieName=? and year=? and seasonNumber=?";
+            String sql1 = "select episodeName as name, episodeNumber, fileName from episodesOut where serieName=? and year=? and seasonNumber=?";
             season.setEpisodes(jdbcTemplate.query(sql1,new Object[]{serieName,year,seasonNumber},new BeanPropertyRowMapper<>(Episode.class)));
 
             return new ResponseEntity<>(season, HttpStatus.OK);
@@ -99,18 +101,19 @@ public class SeasonHandler
     {
         try
         {
-            String sql = "select seasonName, seasonNumber from seasonOut where year = ? and serieName = ?";
+            String sql = "select seasonName as name, seasonNumber from seasonsOut where year = ? and serieName = ?";
 
             List<Season> seasons = jdbcTemplate.query(sql, new Object[]{year,serieName},new BeanPropertyRowMapper<>(Season.class));
             for(Season season:seasons)
             {
-                String sql1 = "select episodeName, episodeNumber, fileName from episodeOut where serieName=? and year=? and seasonNumber=?";
+                String sql1 = "select episodeName as name, episodeNumber, fileName from episodesOut where serieName=? and year=? and seasonNumber=?";
                 season.setEpisodes(jdbcTemplate.query(sql1,new Object[]{serieName,year,season.getSeasonNumber()},new BeanPropertyRowMapper<>(Episode.class)));
             }
             return new ResponseEntity<>(seasons, HttpStatus.OK);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -131,6 +134,32 @@ public class SeasonHandler
             String sql = "DELETE FROM seasons WHERE serieId = (SELECT id FROM series WHERE series.name = ? AND year = ?) and seasonNumber = ?";
             jdbcTemplate.update(sql, new Object[]{serieName,year,seasonNumber});
             return new ResponseEntity<>(HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/one/lastWatched")
+    @ResponseBody
+    public ResponseEntity<Object> lastWatched(@PathParam("name") String name, @PathParam("year") int year, @PathParam("seasonNumber") int seasonNumber)
+    {
+        try
+        {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+            System.out.println(name);
+            System.out.println(username);
+            System.out.println(year);
+            System.out.println(seasonNumber);
+
+            String sql = "SELECT episodeNumber, timeStamp FROM episodesLastWatched WHERE name = ? and year = ? and seasonNumber = ? AND username = ? ORDER BY episodeNumber;";
+
+            List<EpisodeLastWatched> timeStamps = jdbcTemplate.query(sql, new Object[]{name,year,seasonNumber,username},new BeanPropertyRowMapper<>(EpisodeLastWatched.class));
+
+            return new ResponseEntity<>(timeStamps, HttpStatus.OK);
         }
         catch (Exception e)
         {

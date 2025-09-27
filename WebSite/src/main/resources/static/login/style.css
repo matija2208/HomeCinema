@@ -15,9 +15,17 @@ body{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 50%;
+    height: auto;
     background-color: #1138;
     border-radius: 10px;
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
 }
 
 @media (max-width: 500px) {
@@ -40,22 +48,22 @@ body{
 }
 @media (min-width: 1200px) and (max-width: 1500px) {
     .container {
-        width: 30%;
+        width: 50%;
+        /*font-size: 1.5em;*/
     }
 }
 
 @media (min-width: 1500px) {
     .container {
-        width: 30%;
-        height: 40%;
-        font-size: 2em;
+        width: 50%;
+        font-size: 1.5em;
     }
 }
 
 h1{
     color:#08c;
     font-family: 'Consolas', monospace;
-    font-size: 2em;
+    font-size: 1.5em;
     margin: 0;
     padding: 0;
     text-align: center;

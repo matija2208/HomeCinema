@@ -1,4 +1,6 @@
-drop procedure insertMovie;
+USE HomeCinema;
+
+-- drop procedure insertMovie;
 DELIMITER //
 create procedure insertMovie (in movieName varchar(200), in year int, in category varchar(100), in fileName varchar(36), in posterName varchar(36))
 begin
@@ -13,7 +15,7 @@ begin
 end//
 DELIMITER ;
 
-drop procedure insertEpisode;
+-- drop procedure insertEpisode;
 DELIMITER //
 create procedure insertEpisode(in seriesName varchar(200), in seriesYear int, in seasonNumber int, in episodeNumber int,in episodeName varchar(100),in fileName varchar(36))
 begin
@@ -26,7 +28,7 @@ begin
 	values(@seasonId,episodeNumber,episodeName,@fileId);
 end//
 DELIMITER ;
-drop procedure insertSeason
+-- drop procedure insertSeason
 DELIMITER //
 create procedure insertSeason(in serieName varchar(200), in serieYear int, in seasonNumber int, in seasonName varchar(100))
 begin
@@ -36,29 +38,29 @@ begin
 	values(seasonNumber,seasonName,@serieId);
 end//
 DELIMITER ;
-DELIMITER //
-create procedure insertSong(in name varchar(200), in artist varchar(200), in album varchar(200), in year int, in genre varchar(50), in fileName varchar(36))
-begin
+-- DELIMITER //
+-- create procedure insertSong(in name varchar(200), in artist varchar(200), in album varchar(200), in year int, in genre varchar(50), in fileName varchar(36))
+-- begin
 
-	set @fileId = (select id from files where files.fileName = fileName);
+-- 	set @fileId = (select id from files where files.fileName = fileName);
 
-	insert into songs(name,artist,album,year,genre,fileId)
-	values(name,artist,album,year,genre,@fileId);
-end//
-DELIMITER ;
+-- 	insert into songs(name,artist,album,year,genre,fileId)
+-- 	values(name,artist,album,year,genre,@fileId);
+-- end//
+-- DELIMITER ;
 
-DELIMITER //
-create procedure addSongToPlaylist(in playListName varchar(200), in songFileName varchar(36))
-begin
-	set @songId = (select id from songs where fileId = (select id from files where fileName = songFileName));
-	set @playlistId = (select id from playlists where name = playListName);
+-- DELIMITER //
+-- create procedure addSongToPlaylist(in playListName varchar(200), in songFileName varchar(36))
+-- begin
+-- 	set @songId = (select id from songs where fileId = (select id from files where fileName = songFileName));
+-- 	set @playlistId = (select id from playlists where name = playListName);
 
-	insert into songs_playlists
-	values(@songId,@playlistId);
-end//
-DELIMITER ;
+-- 	insert into songs_playlists
+-- 	values(@songId,@playlistId);
+-- end//
+-- DELIMITER ;
 
-drop procedure insertSerie;
+-- drop procedure insertSerie;
 DELIMITER //
 create procedure insertSerie(in serieName varchar(200), in year int, in category varchar(100), in posterName varchar(36))
 begin
@@ -71,7 +73,7 @@ begin
 end//
 delimiter ;
 
-drop procedure saveWatchingTime;
+-- drop procedure saveWatchingTime;
 delimiter //
 create procedure saveWatchingTime(in userName varchar(100), in timeStamp varchar(8), in fileName varchar(36))
 begin
@@ -122,8 +124,8 @@ end//
 delimiter ;
 
 
-call saveWatchingTime('matija','00:02:00','a2714663-2c4a-4a8b-8a98-e8db18006a12');
+-- call saveWatchingTime('matija','03:58','0ee3b773-e4e9-4b6d-81f3-d1a2c151ac71');
 
-call saveWatchingTime('matija','00:04:00','285c9aa9-a155-4639-8df4-3c2800d898c3');
-call saveWatchingTime('root','00:03:00','4514e254-f6ce-488a-a774-a23ccdf465ec');
-    
+-- call saveWatchingTime('matija','00:04:00','285c9aa9-a155-4639-8df4-3c2800d898c3');
+-- call saveWatchingTime('root','00:03:00','4514e254-f6ce-488a-a774-a23ccdf465ec');
+--     

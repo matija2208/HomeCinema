@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import oop.website.Models.User;
 import oop.website.Utilities.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,21 +42,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String uri=(request.getRequestURI());
         System.out.println(uri);
 
-        if(uri.contains("login") || uri.contains("auth/login"))
-        {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
 
         if (cookieHeader == null || cookieHeader.isEmpty()) {
-            if (!uri.contains("/login") && request.getMethod().equals("GET") && !uri.contains("/favicon.ico")) {
+            if (!uri.contains("/login") && !uri.contains("auth") && request.getMethod().equals("GET") && !uri.contains("/favicon.ico")) {
                 String server = "https://" + request.getServerName();
                 response.sendRedirect(server + "/login/index.html");
             }
             else
             {
-
                 filterChain.doFilter(request, response);
             }
             return;
@@ -72,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if(jwt==null)
         {
-            if (!uri.contains("/login") && request.getMethod().equals("GET") && !uri.contains("/favicon.ico")) {
+            if (!uri.contains("/login") && !uri.contains("auth") && request.getMethod().equals("GET") && !uri.contains("/favicon.ico")) {
                 String server = "https://" + request.getServerName();
                 response.sendRedirect(server + "/login/index.html");
             }
@@ -98,10 +93,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     if (user != null) {
                         var UserAuth = new UsernamePasswordAuthenticationToken(user.getName(), user.getPassword(), null);
                         SecurityContextHolder.getContext().setAuthentication(UserAuth);
+
+                        ResponseCookie cookie = ResponseCookie.from("jwt",jwtService.generateToken(user.getName()))
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/")
+                                .maxAge(86400)
+                                .sameSite("Lax")
+                                .build();
+
+                        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
                         filterChain.doFilter(request, response);
                         return;
                     } else {
-                        if (!uri.contains("/login") && request.getMethod().equals("GET")) {
+                        if (!uri.contains("/login") && !uri.contains("auth") && request.getMethod().equals("GET") && !uri.contains("/favicon.ico")) {
                             String server = "https://" + request.getServerName();
                             response.sendRedirect(server + "/login/index.html");
                             return;
@@ -123,6 +129,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             System.out.println("Error: Invalid JWT");
         }
 
-        filterChain.doFilter(request, response);
+        if (!uri.contains("/login") && !uri.contains("auth") && request.getMethod().equals("GET") && !uri.contains("/favicon.ico")) {
+            String server = "https://" + request.getServerName();
+            response.sendRedirect(server + "/login/index.html");
+            return;
+        }
+        else
+        {
+            filterChain.doFilter(request, response);
+            return;
+        }
     }
 }

@@ -1,6 +1,11 @@
 async function search(searchParam)
 {
-    if (searchParam.length > 3)
+    const Url = new URL(window.location.href);
+    Url.searchParams.set("search",searchParam);
+    window.history.pushState({}, '', Url);
+    let cardContainer =document.getElementById("cardContainer");
+    cardContainer.innerHTML = "";
+    if (searchParam.length >= 3)
     {
         try
         {
@@ -9,12 +14,8 @@ async function search(searchParam)
             let response = await axios.get(LINK+"api/search?searchParam="+searchParam);
 
             let results=response.data;
-
-            let cardContainer =
-                document.getElementById("cardContainer");
-
-            cardContainer.innerHTML='';
-
+            let div  = document.createElement("div");
+            div.style.display="contents";
             for(let result of results)
             {
                 console.log(result);
@@ -55,7 +56,7 @@ async function search(searchParam)
                             card.querySelector("img").style.display = "none"; // Hide image if no poster
                             card.querySelector(".card-content").style = "opacity: 1;pointer-events: auto;z-index: 1;";
                         }
-                        cardContainer.appendChild(card);
+                        div.appendChild(card);
                     }
                     catch(err)
                     {
@@ -99,7 +100,7 @@ async function search(searchParam)
                             card.querySelector("img").style.display = "none"; // Hide image if no poster
                             card.querySelector(".card-content").style = "opacity: 1;pointer-events: auto;z-index: 1;";
                         }
-                        cardContainer.appendChild(card);
+                        div.appendChild(card);
                     }
                     catch(err)
                     {
@@ -107,6 +108,8 @@ async function search(searchParam)
                     }
                 }
             }
+
+            cardContainer.innerHTML=div.innerHTML;
 
 
 
@@ -166,33 +169,38 @@ async function changeSeason(name,year,seasonNumber)
             document.getElementById("focusSeasonButtonLabel").innerHTML="";
         }
 
-        console.log(svg);
+        let timeStamps=[];
+        try
+        {
+            response = await axios.get(LINK+"api/seasons/one/lastWatched",{
+                params: {
+                    name: name,
+                    year: year,
+                    seasonNumber: season.seasonNumber
+                }
+            });
+
+            timeStamps = response.data;
+        }
+        catch (err)
+        {
+            console.log(err);
+        }
 
         let episodeContainer = document.getElementById("episodesFocus");
         episodeContainer.innerHTML="";
+        let i=0;
         for(let episode of season.episodes)
         {
             let timeStamp=null;
-            try
+            if(timeStamps.length>i && timeStamps[i].episodeNumber === episode.episodeNumber)
             {
-                response = await axios.get(LINK+"api/episodes/one/lastWatched",{
-                    params: {
-                        name: name,
-                        year: year,
-                        seasonNumber: season.seasonNumber,
-                        episodeNumber: episode.episodeNumber
-                    }
-                });
-
-                timeStamp = response.data;
-            }
-            catch (err)
-            {
-                console.log(err);
+                timeStamp=timeStamps[i].timeStamp;
+                i++;
             }
 
             episodeContainer.innerHTML+=`
-                <div class="episode" onclick="document.location.href='${LINK+"player?type=serie&name="+name+"&year="+year+"&seasonNumber="+seasonNumber+"&episodeNumber="+episode.episodeNumber}';">
+                <div class="episodeFocus" onclick="document.location.href='${LINK+"player?type=serie&name="+name+"&year="+year+"&seasonNumber="+seasonNumber+"&episodeNumber="+episode.episodeNumber}';">
                     <p class = "episodeNumber">${episode.episodeNumber}</p>
                     <p class = "episodeName">${((episode.name!==null)?episode.name:"")}</p>
                     <p class = "episodeTimeStamp">${((timeStamp!==null)?timeStamp:"")}</p>
@@ -261,7 +269,17 @@ async function loadFocus()
 
 
             document.getElementById("playButton").onclick=()=>{
-                location.href=`./player?type=movie&name=${movie.name}&year=${movie.name}`
+                location.href=`./player?type=movie&name=${movie.name}&year=${movie.year}`
+            }
+
+            if(movie.posterName!==null)
+            {
+                console.log(1);
+                document.getElementById("focusPoster").src=(LINK+"api/files/?fileName="+movie.posterName);
+            }
+            else
+            {
+                document.getElementById("focusPoster").src="";
             }
 
             try {
@@ -359,7 +377,7 @@ async function loadFocus()
                 document.getElementById("seasonAndEpisodeFocus").style.display="block";
 
                 document.getElementById("playButton").onclick=()=>{
-                    location.href=`./player?type=movie&name=${serie.name}&year=${serie.year}&seasonNumber=${lastWatched.seasonNumber}&episodeNumber=${lastWatched.episodeNumber}`;
+                    location.href=`./player?type=serie&name=${serie.name}&year=${serie.year}&seasonNumber=${lastWatched.seasonNumber}&episodeNumber=${lastWatched.episodeNumber}`;
                 }
             }
             catch(err)
@@ -368,7 +386,7 @@ async function loadFocus()
                 document.getElementById("timestampFocus").style.display="none";
 
                 document.getElementById("playButton").onclick=()=>{
-                    location.href=`./player?type=movie&name=${serie.name}&year=${serie.year}&seasonNumber=${serie.seasons[findFirstEpisode(serie.seasons)].seasonNumber}&episodeNumber=${serie.seasons[findFirstEpisode(serie.seasons)].episodes[0].episodeNumber}`;
+                    location.href=`./player?type=serie&name=${serie.name}&year=${serie.year}&seasonNumber=${serie.seasons[findFirstEpisode(serie.seasons)].seasonNumber}&episodeNumber=${serie.seasons[findFirstEpisode(serie.seasons)].episodes[0].episodeNumber}`;
                 }
             }
 
@@ -382,7 +400,7 @@ async function loadFocus()
 
             if(lastWatched===null)
             {
-                changeSeason(serie.name,serie.year,1);
+                changeSeason(serie.name,serie.year,serie.seasons[0].seasonNumber);
             }
             else
             {
@@ -414,4 +432,6 @@ document.addEventListener('click', function(event){
 } )
 
 loadFocus();
+let params = new URLSearchParams(window.location.search);
+document.getElementById("searchBox").value=params.get("search");
 search(document.getElementById("searchBox").value)

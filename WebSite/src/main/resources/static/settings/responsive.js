@@ -264,7 +264,7 @@ function addEpisode(button, seasonNumber)
     div.className="episode"
     div.innerHTML += `
             <div class="noNaWrapper">
-                <input type="number" class="number-input" id="episodeNumberS${seasonNumber}E${divEpisodes.children.length}" placeholder="Enter episode number" required>
+                <input type="number" class="number-input" id="episodeNumberS${seasonNumber}E${divEpisodes.children.length}" placeholder="Enter episode number" value="${(divEpisodes.children.length+1)}" required>
                 <input type="text" class="seasonName-input" id="episodeNameS${seasonNumber}E${divEpisodes.children.length}" placeholder="Enter episode name">
             </div>
             <div class = "wrapper">

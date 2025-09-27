@@ -111,7 +111,7 @@ public class SerieHandler
                 String sql = "INSERT INTO files(fileName, fileExtension) VALUES(?,?)";
                 jdbcTemplate.update(sql, fileName, fileExtension);
             }
-            SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("insertSerie");
+            SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withCatalogName("HomeCinema").withProcedureName("insertSerie");
             call.execute(serie.getName(),serie.getYear(), serie.getCategory(), fileName);
 
             if(serie.getSeasons()!=null)
@@ -146,6 +146,7 @@ public class SerieHandler
         }
         catch(Exception e)
         {
+            e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
