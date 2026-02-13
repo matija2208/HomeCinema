@@ -1,4 +1,4 @@
-const LINK = "https://homecinema.servehttp.com/";
+const LINK = "https://homecinema2.servehttp.com/";
 function loadNav() {
     document.body.innerHTML = `
     <nav>

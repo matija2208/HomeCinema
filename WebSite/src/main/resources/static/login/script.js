@@ -22,7 +22,6 @@ if (params.has("username") && params.has("password"))
 
 function login()
 {
-
     let messageElement = document.getElementById("message");
     messageElement.innerText = ""; // Clear previous messages
     if(params.has("error"))

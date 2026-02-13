@@ -42,14 +42,14 @@ public class UserHandler
 
             if(u == null)
             {
-                return new ResponseEntity<>("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema.servehttp.com/login?error=Invalid username&username="+username+"&password="+password+"'</script></body></html>", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema2.servehttp.com/login?error=Invalid username&username="+username+"&password="+password+"'</script></body></html>", HttpStatus.UNAUTHORIZED);
             }
 
             System.out.println(u.getPassword());
             System.out.println(user.getPassword());
             if(!u.getPassword().equals(user.getPassword()) && !user.isPasswordEqual(u.getPassword()))
             {
-                return new ResponseEntity<>("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema.servehttp.com/login?error=Invalid password&username="+username+"&password="+password+"'</script></body></html>", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema2.servehttp.com/login?error=Invalid password&username="+username+"&password="+password+"'</script></body></html>", HttpStatus.UNAUTHORIZED);
             }
             else
             {
@@ -63,13 +63,13 @@ public class UserHandler
 
                 response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-                return ResponseEntity.ok("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema.servehttp.com'</script></body></html>");
+                return ResponseEntity.ok("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema2.servehttp.com'</script></body></html>");
             }
         }
         catch(Exception e)
         {
             e.printStackTrace();
-            return new ResponseEntity<>("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema.servehttp.com/login?error="+e.getMessage()+"&username="+username+"&password="+password+"'</script></body></html>", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("<!DOCTYPE html><html><head></head><body style='background-color: #446;'><script>location.href='https://homecinema2.servehttp.com/login?error="+e.getMessage()+"&username="+username+"&password="+password+"'</script></body></html>", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
